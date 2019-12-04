@@ -2,6 +2,7 @@ package com.eoscode.springapitools.data.domain.filter;
 
 import javax.persistence.criteria.*;
 
+@SuppressWarnings("rawtypes")
 public class DefaultSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {
 
     private Join join;
@@ -25,7 +26,8 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
         } else {
             path = root.get(criteria.getField());
         }
-        Class<?> javaType = root.get(criteria.getField()).getJavaType();
+        //Class<?> javaType = root.get(criteria.getField()).getJavaType();
+        Class<?> javaType = path.getJavaType();
 
         if (criteria.getOperator().equalsIgnoreCase(Operator.EQ.getValue())) {
             if (javaType == boolean.class || javaType == Boolean.class) {
