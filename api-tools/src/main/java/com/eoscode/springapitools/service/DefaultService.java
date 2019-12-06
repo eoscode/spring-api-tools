@@ -11,7 +11,7 @@ public class DefaultService<Repository extends com.eoscode.springapitools.data.r
     private Repository repository;
 
     public DefaultService(ApplicationContext applicationContext, Type repositoryType, Type entityType, Type identifierType) {
-        super(repositoryType, entityType, identifierType);
+        super(applicationContext, repositoryType, entityType, identifierType);
 
         Class<Repository> repositoryClass = (Class<Repository>) repositoryType;
         this.repository = applicationContext.getBean(repositoryClass);

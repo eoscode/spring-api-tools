@@ -4,7 +4,7 @@ import java.util.Optional;
 
 
 @org.springframework.stereotype.Repository
-public class DetailByIdRepositoryImpl<Entity, ID> extends BaseCustomRepository implements DetailByIdRepositoryCustom<Entity, ID> {
+public class DefaultCustomDetailByIdRepository<Entity, ID> extends BaseCustomRepository implements CustomDetailByIdRepository<Entity, ID> {
 	
 	@Override
 	public Optional<Entity> findDetailById(Class<Entity> entityClass, ID id) {

@@ -5,8 +5,8 @@ import com.eoscode.springapitools.data.domain.FindAttribute;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.domain.NoDelete;
 import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
-import com.eoscode.springapitools.data.repository.FindByIdRepositoryCustom;
-import com.eoscode.springapitools.data.repository.NoDeleteRepositoryCustom;
+import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
+import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
 import com.eoscode.springapitools.util.ReflectionUtils;
@@ -14,6 +14,7 @@ import com.eoscode.springapitools.util.SpecificationsBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -34,16 +35,19 @@ import java.util.stream.Collectors;
 import static org.reflections.ReflectionUtils.getAllFields;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractService<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID> {
 
     private final Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
-    private FindByIdRepositoryCustom findByIdRepositoryCustom;
+    private CustomFindByIdRepository customFindByIdRepository;
 
     @Autowired
-    private NoDeleteRepositoryCustom noDeleteRepositoryCustom;
+    private CustomDeleteByIdRepository customDeleteByIdRepository;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public abstract Repository getRepository();
 
@@ -65,7 +69,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         metaData();
     }
 
-    public AbstractService(Type repositoryType, Type entityType, Type identifierType) {
+    public AbstractService(ApplicationContext applicationContext, Type repositoryType, Type entityType, Type identifierType) {
+        this.applicationContext = applicationContext;
         this.repositoryType = repositoryType;
         this.entityType = entityType;
         this.identifierType = identifierType;
@@ -85,7 +90,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return identifierType;
     }
 
-    @SuppressWarnings("unchecked")
     private Class<Entity> getEntityClass() {
         return entityClass;
     }
@@ -102,6 +106,17 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
                 return true;
             }
         }));
+
+        if (applicationContext != null) {
+            if (customFindByIdRepository == null) {
+                customFindByIdRepository = applicationContext.getBean(CustomFindByIdRepository.class);
+            }
+
+            if (customDeleteByIdRepository == null) {
+                customDeleteByIdRepository = applicationContext.getBean(CustomDeleteByIdRepository.class);
+            }
+        }
+
     }
 
     @SuppressWarnings("Duplicates")
@@ -151,8 +166,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         EntityNotFoundException objectNotFound = new EntityNotFoundException(
                 "Object not found! Id: " + id + ", Type: " + getEntityType().getTypeName ());
 
-        Optional<Entity> result = findByIdRepositoryCustom.findById(getEntityClass(), id);
-
+        Optional<Entity> result = customFindByIdRepository.findCustomById(getEntityClass(), id);
         return result.orElse(getRepository().findById(id).orElseThrow(() -> objectNotFound));
 
     }
@@ -160,7 +174,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     public Entity findDetailById(ID id) throws EntityNotFoundException {
         @SuppressWarnings("unchecked")
         Class<Entity> classType = (Class<Entity>) entityType;
-        Optional<Entity> result = findByIdRepositoryCustom.findDetailById(classType, id);
+        Optional<Entity> result = customFindByIdRepository.findDetailById(classType, id);
         if (result.isPresent()) {
             return result.get();
         } else {
@@ -178,7 +192,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         Entity entity = findById(id);
         Class<Entity> classEntity = (Class<Entity>) entityType;
         if (classEntity.isAnnotationPresent(NoDelete.class)) {
-            noDeleteRepositoryCustom.noDeleteById(classEntity, id);
+           customDeleteByIdRepository.deleteById(classEntity, id);
         } else {
             getRepository().deleteById(id);
         }
@@ -189,7 +203,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         Class<Entity> classEntity = (Class<Entity>) entityType;
         if (classEntity.isAnnotationPresent(NoDelete.class)) {
             ID id =  ((Identifier<ID>) entity).getId();
-            noDeleteRepositoryCustom.noDeleteById(classEntity, id);
+            customDeleteByIdRepository.deleteById(classEntity, id);
         } else {
             getRepository().delete(entity);
         }
