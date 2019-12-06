@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "state")
@@ -26,5 +27,8 @@ public class State implements Identifier<String> {
 
     @Column(name = "name", length = 60)
     private String name;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "state")
+    private List<City> cities;
 
 }
