@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.Query;
 
 @Repository
-public class DefaultCustomDeleteByIdRepository<Entity, ID> extends BaseCustomRepository implements CustomDeleteByIdRepository<Entity, ID> {
+public class DefaultCustomDeleteByIdRepository<Entity, ID> extends BaseRepository<Entity, ID>
+        implements CustomDeleteByIdRepository<Entity, ID> {
 
     @Override
     public int deleteById(Class<Entity> entityClass, ID id) {

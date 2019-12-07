@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -15,20 +16,43 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private DefaultService<Repository, Entity, ID> defaultService;
-
 	@Autowired
-	public AbstractRepositoryResource(ApplicationContext applicationContext) {
+	private ApplicationContext applicationContext;
+
+	private DefaultService<Repository, Entity, ID> defaultService;
+	private Type repositoryType;
+	private Type entityType;
+	private Type identifierType;
+
+
+	public AbstractRepositoryResource() {
 
 		Type type = getClass().getGenericSuperclass();
 		ParameterizedType pType = (ParameterizedType) type;
 
-		Type repositoryType = pType.getActualTypeArguments()[0];
-		Type entityType =  pType.getActualTypeArguments()[1];
-		Type identifierType = pType.getActualTypeArguments()[2];
+		repositoryType = pType.getActualTypeArguments()[0];
+		entityType =  pType.getActualTypeArguments()[1];
+		identifierType = pType.getActualTypeArguments()[2];
 
-		this.defaultService = new DefaultService<>(applicationContext, repositoryType, entityType, identifierType);
+	}
 
+	@PostConstruct
+	private void metaData() {
+		this.defaultService = new DefaultService<>(applicationContext, getRepositoryType(), getEntityType(), getIdentifierType());
+	}
+
+	@Override
+	public Type getEntityType() {
+		return entityType;
+	}
+
+	@Override
+	public Type getIdentifierType() {
+		return identifierType;
+	}
+
+	public Type getRepositoryType() {
+		return repositoryType;
 	}
 
 	@Override

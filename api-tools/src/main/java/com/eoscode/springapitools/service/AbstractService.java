@@ -66,6 +66,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         repositoryType = pType.getActualTypeArguments()[0];
         entityType =  pType.getActualTypeArguments()[1];
         identifierType = pType.getActualTypeArguments()[2];
+
         entityClass = (Class<Entity>) entityType;
     }
 
@@ -116,7 +117,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
             // if not repository, get default repository in context
             if (getRepository() == null) {
-                repository = applicationContext.getBean((Class<Repository>) repositoryType);
+                repository = applicationContext.getBean((Class<Repository>) getRepositoryType());
             }
 
             if (customFindByIdRepository == null) {

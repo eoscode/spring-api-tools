@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @NoRepositoryBean
-public class BaseCustomRepository {
+public class BaseRepository<Entity, ID> {
 
     @PersistenceContext
     private EntityManager entityManger;
@@ -20,7 +20,7 @@ public class BaseCustomRepository {
         return entityManger;
     }
 
-    <Entity, ID> Optional<Entity> findWithEntityGraph(String entityGraph, Class<Entity> entityClass, ID id) {
+    Optional<Entity> findWithEntityGraph(String entityGraph, Class<Entity> entityClass, ID id) {
 
         EntityGraph<?> graph = entityManger.createEntityGraph(entityClass.getSimpleName()+"."+entityGraph);
         if (graph == null) {
