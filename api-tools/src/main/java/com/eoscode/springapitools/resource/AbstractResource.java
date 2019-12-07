@@ -50,9 +50,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@PostConstruct
 	private void metaData() {
 		if (applicationContext != null) {
-			Class<Service> serviceClass = (Class<Service>) serviceType;
-			if (serviceClass.isAnnotationPresent(org.springframework.stereotype.Service.class)) {
-				service = applicationContext.getBean(serviceClass);
+			if (getService() == null) {
+				Class<Service> serviceClass = (Class<Service>) serviceType;
+				if (serviceClass.isAnnotationPresent(org.springframework.stereotype.Service.class)) {
+					service = applicationContext.getBean(serviceClass);
+				}
 			}
 		}
 	}
