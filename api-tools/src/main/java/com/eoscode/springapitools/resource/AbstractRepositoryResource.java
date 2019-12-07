@@ -15,7 +15,7 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private DefaultService defaultService;
+	private DefaultService<Repository, Entity, ID> defaultService;
 
 	private Type repositoryType;
 	private Type entityType;
@@ -31,7 +31,7 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 		this.entityType =  pType.getActualTypeArguments()[1];
 		this.identifierType = pType.getActualTypeArguments()[2];
 
-		this.defaultService = new DefaultService(applicationContext, repositoryType, entityType, identifierType);
+		this.defaultService = new DefaultService<>(applicationContext, repositoryType, entityType, identifierType);
 
 	}
 
@@ -52,9 +52,8 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 		return (Class<Entity>) entityType;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public DefaultService getService() {
+	public DefaultService<Repository, Entity, ID> getService() {
 		return defaultService;
 	}
 

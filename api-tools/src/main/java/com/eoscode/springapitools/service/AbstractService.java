@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -49,7 +50,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     @Autowired
     private ApplicationContext applicationContext;
 
-    public abstract Repository getRepository();
+    public Repository repository;
 
     private Type repositoryType;
     private Type entityType;
@@ -66,7 +67,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         entityType =  pType.getActualTypeArguments()[1];
         identifierType = pType.getActualTypeArguments()[2];
         entityClass = (Class<Entity>) entityType;
-        metaData();
     }
 
     public AbstractService(ApplicationContext applicationContext, Type repositoryType, Type entityType, Type identifierType) {
@@ -94,6 +94,11 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return entityClass;
     }
 
+    protected Repository getRepository() {
+        return repository;
+    }
+
+    @PostConstruct
     private void metaData() {
         ignoreWithFindAttributeAnnotation = getAllFields(entityClass, withAnnotation(new FindAttribute() {
             @Override
@@ -108,6 +113,9 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         }));
 
         if (applicationContext != null) {
+
+            repository = applicationContext.getBean((Class<Repository>) repositoryType);
+
             if (customFindByIdRepository == null) {
                 customFindByIdRepository = applicationContext.getBean(CustomFindByIdRepository.class);
             }
@@ -156,9 +164,11 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             } catch (IllegalAccessException | InvocationTargetException e) {
                 log.error(e.getMessage(), e);
             }
+            return getRepository().save(entityOld);
+        } else {
+            return getRepository().save(entity);
         }
 
-        return getRepository().save(entityOld);
     }
 
     public Entity findById(ID id) throws EntityNotFoundException {
@@ -172,15 +182,9 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     }
 
     public Entity findDetailById(ID id) throws EntityNotFoundException {
-        @SuppressWarnings("unchecked")
         Class<Entity> classType = (Class<Entity>) entityType;
         Optional<Entity> result = customFindByIdRepository.findDetailById(classType, id);
-        if (result.isPresent()) {
-            return result.get();
-        } else {
-            throw new EntityNotFoundException(
-                    "Object not found! Id: " + id + ", Type: " + getEntityType().getTypeName ());
-        }
+        return result.orElseGet(() -> findById(id));
     }
 
     public boolean existsById(ID id) {
