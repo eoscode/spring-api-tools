@@ -3,7 +3,6 @@ package com.eoscode.springapitools.sample.resource;
 import com.eoscode.springapitools.resource.AbstractRepositoryResource;
 import com.eoscode.springapitools.sample.entity.City;
 import com.eoscode.springapitools.sample.repository.CityRepository;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,7 +10,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cities")
 public class CityResource extends AbstractRepositoryResource<CityRepository, City, String> {
 
-    public CityResource(ApplicationContext applicationContext) {
-        super(applicationContext);
-    }
 }
