@@ -17,39 +17,18 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 
 	private DefaultService<Repository, Entity, ID> defaultService;
 
-	private Type repositoryType;
-	private Type entityType;
-	private Type identifierType;
-
 	@Autowired
 	public AbstractRepositoryResource(ApplicationContext applicationContext) {
 
 		Type type = getClass().getGenericSuperclass();
 		ParameterizedType pType = (ParameterizedType) type;
 
-		this.repositoryType = pType.getActualTypeArguments()[0];
-		this.entityType =  pType.getActualTypeArguments()[1];
-		this.identifierType = pType.getActualTypeArguments()[2];
+		Type repositoryType = pType.getActualTypeArguments()[0];
+		Type entityType =  pType.getActualTypeArguments()[1];
+		Type identifierType = pType.getActualTypeArguments()[2];
 
 		this.defaultService = new DefaultService<>(applicationContext, repositoryType, entityType, identifierType);
 
-	}
-
-	public Type getRepositoryType() {
-		return repositoryType;
-	}
-
-	private Type getEntityType() {
-		return entityType;
-	}
-
-	public Type getIdentifierType() {
-		return identifierType;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Class<Entity> getEntityClass() {
-		return (Class<Entity>) entityType;
 	}
 
 	@Override

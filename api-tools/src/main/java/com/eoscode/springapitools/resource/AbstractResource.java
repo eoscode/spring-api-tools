@@ -5,6 +5,8 @@ import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -12,19 +14,69 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
 
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "unchecked"})
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
+	
+	@Autowired
+	private ApplicationContext applicationContext;
 
-    public abstract Service getService();
-    
-    public AbstractResource() {}
+	private Service service;
 
+	private Type serviceType;
+	private Type entityType;
+	private Type identifierType;
+	private Class<Entity> entityClass;
+	
+	public AbstractResource() {
+		Type type = getClass().getGenericSuperclass();
+		ParameterizedType pType = (ParameterizedType) type;
+
+		serviceType = pType.getActualTypeArguments()[0];
+		entityType =  pType.getActualTypeArguments()[1];
+		identifierType = pType.getActualTypeArguments()[2];
+		entityClass = (Class<Entity>) entityType;
+
+	}
+
+	@PostConstruct
+	private void metaData() {
+		if (applicationContext != null) {
+			Class<Service> serviceClass = (Class<Service>) serviceType;
+			if (serviceClass.isAnnotationPresent(org.springframework.stereotype.Service.class)) {
+				service = applicationContext.getBean(serviceClass);
+			}
+		}
+	}
+
+	public Type getServiceType() {
+		return serviceType;
+	}
+
+	public Type getEntityType() {
+		return entityType;
+	}
+
+	public Type getIdentifierType() {
+		return identifierType;
+	}
+
+	private Class<Entity> getEntityClass() {
+		return entityClass;
+	}
+	
+	protected Service getService() {
+		return service;
+	}
+	
 	@PostMapping
 	public ResponseEntity<Entity> save(@Valid @RequestBody Entity entity) {
 		entity = getService().save(entity);
