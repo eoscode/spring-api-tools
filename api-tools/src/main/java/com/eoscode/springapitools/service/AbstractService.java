@@ -50,7 +50,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     @Autowired
     private ApplicationContext applicationContext;
 
-    public Repository repository;
+    private Repository repository;
 
     private Type repositoryType;
     private Type entityType;
