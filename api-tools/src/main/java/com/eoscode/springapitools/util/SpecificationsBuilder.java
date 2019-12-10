@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("rawtypes")
 public class SpecificationsBuilder<T> {
 
+    private Boolean distinct = true;
+
     private final List<FilterCriteria> criteries;
     private final Map<String, List<FilterCriteria>> joinCriteries;
 
@@ -24,6 +26,16 @@ public class SpecificationsBuilder<T> {
     public SpecificationsBuilder() {
         criteries = new ArrayList<>();
         joinCriteries = new HashMap<>();
+    }
+
+    public SpecificationsBuilder(boolean distinct) {
+        this();
+        this.distinct = distinct;
+    }
+
+    public SpecificationsBuilder distinct(boolean distinct) {
+        this.distinct = distinct;
+        return this;
     }
 
     public SpecificationsBuilder with(String field, String operation, Object value) {
@@ -50,18 +62,9 @@ public class SpecificationsBuilder<T> {
             return null;
         }
 
-        List<Specification<T>> specs = criteries.stream()
-                .map(DefaultSpecification<T>::new)
-                .collect(Collectors.toList());
-
         if (criteries.size() > 0) {
-            result = specs.get(0);
+            result = where(criteries);
         }
-
-        for (int i = 1; i < criteries.size(); i++) {
-            result = Specification.where(result).and(specs.get(i));
-        }
-        //result = Specification.where(where(criteries));
 
         joinCriteries.forEach((key, filters) -> {
             if (result == null) {
@@ -77,6 +80,11 @@ public class SpecificationsBuilder<T> {
     @SuppressWarnings("unchecked")
     Specification<T> where(List<FilterCriteria> filters) {
         return (root, query, builder) -> {
+
+            if (distinct != null) {
+                query.distinct(distinct);
+            }
+
             List<Specification> specs = filters.stream()
                     .map(DefaultSpecification::new)
                     .collect(Collectors.toList());
@@ -88,6 +96,11 @@ public class SpecificationsBuilder<T> {
     @SuppressWarnings("unchecked")
     Specification<T> join(String field, List<FilterCriteria> filters) {
         return (root, query, builder) -> {
+
+            if (distinct != null) {
+                query.distinct(distinct);
+            }
+
             final Join join = root.join(field, JoinType.LEFT);
             List<Specification> specs = filters.stream()
                     .map(filter -> new DefaultSpecification(join, filter))
@@ -96,19 +109,5 @@ public class SpecificationsBuilder<T> {
             return builder.and(specs.stream().map(item -> item.toPredicate(root, query, builder)).toArray(Predicate[]::new));
         };
     }
-
-/*    Predicate[] where(List<FilterCriteria> filters) {
-        return (root, query, builder) -> {
-            List<Specification> specs = filters.stream()
-                    .map(DefaultSpecification::new)
-                    .collect(Collectors.toList());
-
-            List<Predicate> predicates = new ArrayList<>();
-            specs.forEach(spec -> {
-                predicates.add(spec.toPredicate(root, query, builder));
-            });
-            return predicates;
-        };
-    }*/
 
 }
