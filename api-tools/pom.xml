@@ -11,7 +11,7 @@
 
     <groupId>com.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <name>spring-api-tools</name>
     <description>project commons for spring api</description>
 
