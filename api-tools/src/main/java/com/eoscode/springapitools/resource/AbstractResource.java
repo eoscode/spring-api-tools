@@ -1,7 +1,7 @@
 package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.data.domain.Identifier;
-import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
+import com.eoscode.springapitools.data.domain.QueryDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -148,15 +148,16 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping("/query")
 	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
+											  @RequestParam(value = "distinct", required = false) boolean distinct,
 											  @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().find(query, pageable);
+		Page<Entity> page = getService().query(query, pageable, distinct);
 		return ResponseEntity.ok(page);
 	}
 
 	@PostMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestBody List<FilterCriteria> criteries,
-											 @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().find(criteries, pageable);
+	public ResponseEntity<Page<Entity>> query(@RequestBody QueryDefinition queryDefinition,
+											  @PageableDefault Pageable pageable) {
+		Page<Entity> page = getService().query(queryDefinition, pageable);
 		return ResponseEntity.ok(page);
 	}
 

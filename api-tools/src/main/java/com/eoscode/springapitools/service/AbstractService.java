@@ -1,9 +1,6 @@
 package com.eoscode.springapitools.service;
 
-import com.eoscode.springapitools.data.domain.Find;
-import com.eoscode.springapitools.data.domain.FindAttribute;
-import com.eoscode.springapitools.data.domain.Identifier;
-import com.eoscode.springapitools.data.domain.NoDelete;
+import com.eoscode.springapitools.data.domain.*;
 import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
@@ -237,26 +234,29 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         }
     }
 
-    public Page<Entity> find(String query, Pageable pageable) {
-        List<FilterCriteria> criteries = new ArrayList<>();
+    public Page<Entity> query(String query, Pageable pageable, Boolean distinct) {
+        List<FilterCriteria> criteria = new ArrayList<>();
         Pattern pattern = Pattern.compile(
                 "(\\w+.?\\w*)(>=|<=|>|<|=|!=|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*),",
                 Pattern.UNICODE_CHARACTER_CLASS);
         Matcher matcher = pattern.matcher(query + ",");
 
         while (matcher.find()) {
-            criteries.add(new FilterCriteria(matcher.group(1),
+            criteria.add(new FilterCriteria(matcher.group(1),
                     matcher.group(2), matcher.group(3)));
         }
-        return find(criteries, pageable);
+        QueryDefinition queryDefinition = new QueryDefinition();
+        queryDefinition.setDistinct(distinct);
+        queryDefinition.setFilters(criteria);
+        return query(queryDefinition, pageable);
     }
 
-    public List<Entity> find(List<FilterCriteria> criteries) {
-        return getRepository().findAll(getDefaultSpecification(criteries));
+    public List<Entity> query(QueryDefinition queryDefinition) {
+        return getRepository().findAll(getDefaultSpecification(queryDefinition));
     }
 
-    public Page<Entity> find(List<FilterCriteria> criteries, Pageable pageable) {
-        return getRepository().findAll(getDefaultSpecification(criteries), pageable);
+    public Page<Entity> query(QueryDefinition queryDefinition, Pageable pageable) {
+        return getRepository().findAll(getDefaultSpecification(queryDefinition), pageable);
     }
 
     @SuppressWarnings("Duplicates")
@@ -302,8 +302,11 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return (root, cq, cb) -> cb.equal(root.get(field), value);
     }
 
-    Specification<Entity> getDefaultSpecification(List<FilterCriteria> criteries) {
+    Specification<Entity> getDefaultSpecification(QueryDefinition queryDefinition) {
+        List<FilterCriteria> criteries = queryDefinition.getFilters();
+
         SpecificationsBuilder<Entity> builder = new SpecificationsBuilder<>();
+        builder.distinct(queryDefinition.isDistinct());
         criteries.forEach(builder::with);
 
         Specification<Entity> spec = builder.build();

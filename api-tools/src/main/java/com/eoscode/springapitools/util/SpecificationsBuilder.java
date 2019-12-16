@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("rawtypes")
 public class SpecificationsBuilder<T> {
 
-    private Boolean distinct = true;
+    private Boolean distinct;
 
     private final List<FilterCriteria> criteries;
     private final Map<String, List<FilterCriteria>> joinCriteries;
