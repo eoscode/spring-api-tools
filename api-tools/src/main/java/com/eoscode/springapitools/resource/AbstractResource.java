@@ -1,7 +1,7 @@
 package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.data.domain.Identifier;
-import com.eoscode.springapitools.data.domain.QueryDefinition;
+import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -162,8 +164,8 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<List<Entity>> findAll() {
-		List<Entity> list = getService().findAll();
+	public ResponseEntity<List<Entity>> findAll(@SortDefault Sort sort) {
+		List<Entity> list = getService().findAll(sort);
 		return ResponseEntity.ok(list);
 	}
 

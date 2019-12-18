@@ -1,13 +1,12 @@
-package com.eoscode.springapitools.data.domain;
-
-import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
+package com.eoscode.springapitools.data.filter;
 
 import java.util.List;
 
 public class QueryDefinition {
 
     private Boolean distinct;
-    private List<FilterCriteria> filters;
+    private List<FilterDefinition> filters;
+    private List<SortDefinition> sorts;
 
     public QueryDefinition() {}
 
@@ -22,12 +21,20 @@ public class QueryDefinition {
         this.distinct = distinct;
     }
 
-    public List<FilterCriteria> getFilters() {
+    public List<FilterDefinition> getFilters() {
         return filters;
     }
 
-    public void setFilters(List<FilterCriteria> filters) {
+    public void setFilters(List<FilterDefinition> filters) {
         this.filters = filters;
+    }
+
+    public List<SortDefinition> getSorts() {
+        return sorts;
+    }
+
+    public void setSorts(List<SortDefinition> sorts) {
+        this.sorts = sorts;
     }
 
 }
