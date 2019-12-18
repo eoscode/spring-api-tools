@@ -263,7 +263,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @SuppressWarnings("Duplicates")
     public List<Entity> findAll() {
-        return findAll(null);
+        return findAll(Sort.unsorted());
     }
 
     public List<Entity> findAll(Sort sort) {
@@ -279,11 +279,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             }
         }
 
-        if (sort != null) {
-            return getRepository().findAll(specification, sort);
-        } else {
-            return getRepository().findAll(specification);
-        }
+        return getRepository().findAll(specification, sort);
+
     }
 
     @SuppressWarnings("Duplicates")
@@ -412,6 +409,14 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return null;
     }
 
+    private List<Sort.Order> getDefaultSort(List<SortDefinition> sorts) {
+        List<Sort.Order> orders = new ArrayList<>();
+        if (sorts != null && sorts.size() > 0) {
+            sorts.forEach(sortDefinition -> orders.add(Sort.Order.asc(sortDefinition.getField())));
+        }
+        return orders;
+    }
+
     private Pageable getDefaultSortAndPageRequest(List<SortDefinition> sorts, Pageable pageable) {
         if (pageable == null) {
             return null;
@@ -420,11 +425,4 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
 
-    private List<Sort.Order> getDefaultSort(List<SortDefinition> sorts) {
-        List<Sort.Order> orders = new ArrayList<>();
-        if (sorts != null && sorts.size() > 0) {
-            sorts.forEach(sortDefinition -> orders.add(Sort.Order.asc(sortDefinition.getField())));
-        }
-        return orders;
-    }
 }

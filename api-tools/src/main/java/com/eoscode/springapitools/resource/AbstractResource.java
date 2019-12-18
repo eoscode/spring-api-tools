@@ -170,7 +170,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@GetMapping("/pages")
-	public ResponseEntity<Page<Entity>> findAllPage(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
+	public ResponseEntity<Page<Entity>> findAllPageAndSort(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
 		Page<Entity> page = getService().findAllPages(pageable);
 		return ResponseEntity.ok(page);
 	}
