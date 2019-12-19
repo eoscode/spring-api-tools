@@ -1,16 +1,13 @@
-package com.eoscode.springapitools.data.domain.filter;
+package com.eoscode.springapitools.data.filter;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
-public class FilterCriteria {
+public class FilterDefinition {
     private String field;
     private String operator;
     private Object value;
 
-    @JsonCreator(mode = JsonCreator.Mode.DEFAULT)
-    public FilterCriteria() {}
+    public FilterDefinition() {}
 
-    public FilterCriteria(String field, String operator, Object value) {
+    public FilterDefinition(String field, String operator, Object value) {
         this.field = field;
         this.operator = operator;
         this.value = value;

@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface NoDelete {
     String field() default "status";
     String defaultValue() default "1";
-    String deleteValue() default "0";
+    String deletedValue() default "0";
 }
