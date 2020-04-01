@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.eoscode</groupId>
+    <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools-module</artifactId>
     <version>0.1.0</version>
     <packaging>pom</packaging>
