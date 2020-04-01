@@ -1,7 +1,7 @@
 package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.data.domain.Identifier;
-import com.eoscode.springapitools.data.domain.filter.FilterCriteria;
+import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -148,26 +150,27 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping("/query")
 	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
+											  @RequestParam(value = "distinct", required = false) boolean distinct,
 											  @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().find(query, pageable);
+		Page<Entity> page = getService().query(query, pageable, distinct);
 		return ResponseEntity.ok(page);
 	}
 
 	@PostMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestBody List<FilterCriteria> criteries,
-											 @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().find(criteries, pageable);
+	public ResponseEntity<Page<Entity>> query(@RequestBody QueryDefinition queryDefinition,
+											  @PageableDefault Pageable pageable) {
+		Page<Entity> page = getService().query(queryDefinition, pageable);
 		return ResponseEntity.ok(page);
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<List<Entity>> findAll() {
-		List<Entity> list = getService().findAll();
+	public ResponseEntity<List<Entity>> findAll(@SortDefault Sort sort) {
+		List<Entity> list = getService().findAll(sort);
 		return ResponseEntity.ok(list);
 	}
 
 	@GetMapping("/pages")
-	public ResponseEntity<Page<Entity>> findAllPage(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
+	public ResponseEntity<Page<Entity>> findAllPageAndSort(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
 		Page<Entity> page = getService().findAllPages(pageable);
 		return ResponseEntity.ok(page);
 	}

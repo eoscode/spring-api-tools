@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.data.domain.filter;
+package com.eoscode.springapitools.data.filter;
 
 import javax.persistence.criteria.*;
 
@@ -6,13 +6,13 @@ import javax.persistence.criteria.*;
 public class DefaultSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {
 
     private Join join;
-    private FilterCriteria criteria;
+    private FilterDefinition criteria;
 
-    public DefaultSpecification(FilterCriteria filterCriteria) {
+    public DefaultSpecification(FilterDefinition filterCriteria) {
         this.criteria = filterCriteria;
     }
 
-    public DefaultSpecification(Join join, FilterCriteria filterCriteria) {
+    public DefaultSpecification(Join join, FilterDefinition filterCriteria) {
         this.join = join;
         this.criteria = filterCriteria;
     }

@@ -15,7 +15,7 @@ public class DefaultCustomFindByIdRepository<Entity, ID> extends BaseRepository<
 
     @Override
     public Optional<Entity> findDetailById(Class<Entity> entityClass, ID id) {
-        return findWithEntityGraph("detail", entityClass, id);
+        return findWithEntityGraph("findDetailById", entityClass, id);
     }
 
 
