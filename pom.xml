@@ -12,13 +12,14 @@
 
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools-module</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <spring-api-tools.version>1.0.4-RELEASE</spring-api-tools.version>
     </properties>
 
     <modules>
