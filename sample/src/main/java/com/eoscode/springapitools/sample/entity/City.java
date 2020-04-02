@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "city")
 @NamedEntityGraphs(
-        @NamedEntityGraph(name = "City.detail", attributeNodes = {
+        @NamedEntityGraph(name = "City.findDetailById", attributeNodes = {
                 @NamedAttributeNode("state")
         })
 )

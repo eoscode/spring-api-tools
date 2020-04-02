@@ -14,7 +14,7 @@ public class DefaultCustomDeleteByIdRepository<Entity, ID> extends BaseRepositor
         NoDelete deleteNoEntityById = entityClass.getAnnotation(NoDelete.class);
         Query query = getEntityManger()
                 .createQuery(String.format("update %s as obj set obj.%s = %s where obj.id = :id",
-                        entityClass.getSimpleName(), deleteNoEntityById.field(), deleteNoEntityById.deleteValue()));
+                        entityClass.getSimpleName(), deleteNoEntityById.field(), deleteNoEntityById.deletedValue()));
         query.setParameter("id", id);
         return query.executeUpdate();
     }
