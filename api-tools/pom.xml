@@ -3,15 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.4.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>com.github.eoscode</groupId>
+        <artifactId>spring-api-tools-module</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../</relativePath>
     </parent>
 
-    <groupId>com.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.0.4</version>
+    <version>${spring-api-tools.version}</version>
     <name>spring-api-tools</name>
     <description>project commons for spring api</description>
 
