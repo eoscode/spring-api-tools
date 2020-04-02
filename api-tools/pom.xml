@@ -9,7 +9,7 @@
         <relativePath>../</relativePath>
     </parent>
 
-    <groupId>com.github.eoscode</groupId>
+    <artifactId>spring-api-tools</artifactId>
     <version>${spring-api-tools.version}</version>
     <name>spring-api-tools</name>
     <description>project commons for spring api</description>
