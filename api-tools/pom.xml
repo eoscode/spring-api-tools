@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.RELEASE</version>
+        <version>2.2.4.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <name>spring-api-tools</name>
     <description>project commons for spring api</description>
 
@@ -60,13 +60,13 @@
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>0.9.12</version>
         </dependency>
 
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.2</version>
+            <version>1.9.4</version>
         </dependency>
 
         <dependency>
