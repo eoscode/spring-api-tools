@@ -11,9 +11,9 @@
 
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.0.4-1-RELEASE</version>
+    <version>1.0.4-2-RELEASE</version>
     <name>spring-api-tools</name>
-    <description>project commons for spring api</description>
+    <description>Tools for spring api. Create CRUD without code, use abstractions for Repository, Service and Resource with supported for dynamic query.</description>
     <url>https://github.com/eoscode/spring-api-tools</url>
 
     <properties>
