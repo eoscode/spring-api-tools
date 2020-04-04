@@ -3,16 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.github.eoscode</groupId>
-        <artifactId>spring-api-tools-module</artifactId>
-        <version>1.0.0</version>
-        <relativePath>../</relativePath>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.4.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>${spring-api-tools.version}</version>
+    <version>1.0.4-2-RELEASE</version>
     <name>spring-api-tools</name>
-    <description>project commons for spring api</description>
+    <description>Tools for spring api. Create CRUD without code, use abstractions for Repository, Service and Resource with supported for dynamic query.</description>
+    <url>https://github.com/eoscode/spring-api-tools</url>
 
     <properties>
         <java.version>1.8</java.version>
@@ -125,6 +127,98 @@
                 <artifactId>azure-webapp-maven-plugin</artifactId>
                 <version>1.8.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <organization>
+        <name>com.github.eoscode</name>
+        <url>https://github.com/eoscode</url>
+    </organization>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/eoscode/spring-api-tools/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus</id>
+            <name>Sonatype Nexus snapshot repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus</id>
+            <name>Sonatype Nexus release repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/eoscode/spring-api-tools/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/eoscode/spring-api-tools</url>
+        <connection>
+            scm:git:git://github.com/eoscode/spring-api-tools.git
+        </connection>
+        <developerConnection>
+            scm:git:ssh://git@github.com/eoscode/spring-api-tools.git
+        </developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <id>eoscode</id>
+            <name>Eduardo Santos</name>
+            <email>duosan@gmail.com</email>
+        </developer>
+    </developers>
+
+    <profiles>
+        <profile>
+            <id>release-sign</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
