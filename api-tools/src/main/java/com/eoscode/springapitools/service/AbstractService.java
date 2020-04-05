@@ -238,7 +238,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     public Page<Entity> query(String query, Pageable pageable, Boolean distinct) {
         List<FilterDefinition> criteria = new ArrayList<>();
         Pattern pattern = Pattern.compile(
-                "(\\w+.?\\w*)(>=|<=|>|<|=|!=|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*),",
+                "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*),",
                 Pattern.UNICODE_CHARACTER_CLASS);
         Matcher matcher = pattern.matcher(query + ",");
 
