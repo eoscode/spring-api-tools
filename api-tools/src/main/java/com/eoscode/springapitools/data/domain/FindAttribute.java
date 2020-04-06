@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FindAttribute {
     boolean ignore() default false;
+    boolean supportedDefaultValue() default true;
 }

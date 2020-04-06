@@ -22,7 +22,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -30,10 +29,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static org.reflections.ReflectionUtils.getAllFields;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractService<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID> {
@@ -56,7 +53,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     private Type identifierType;
     private Class<Entity> entityClass;
 
-    private Set<Field> ignoreWithFindAttributeAnnotation;
+    private Set<Field> findAttributeAnnotations = new HashSet<>();
 
     public AbstractService() {
         Type type = getClass().getGenericSuperclass();
@@ -69,7 +66,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         entityClass = (Class<Entity>) entityType;
     }
 
-    public AbstractService(ApplicationContext applicationContext, Type repositoryType, Type entityType, Type identifierType) {
+    public AbstractService(ApplicationContext applicationContext,
+                           Type repositoryType, Type entityType, Type identifierType) {
         this.applicationContext = applicationContext;
         this.repositoryType = repositoryType;
         this.entityType = entityType;
@@ -100,17 +98,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @PostConstruct
     private void metaData() {
-        ignoreWithFindAttributeAnnotation = getAllFields(entityClass, withAnnotation(new FindAttribute() {
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return FindAttribute.class;
-            }
 
-            @Override
-            public boolean ignore() {
-                return true;
-            }
-        }));
+        findAttributeAnnotations = getAllFields(entityClass, withAnnotation(FindAttribute.class));
 
         if (applicationContext != null) {
 
@@ -337,37 +326,74 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     }
 
     Example<Entity> getDefaultExample(Entity entity) {
+
         ExampleMatcher matcher = ExampleMatcher.matching()
-                //.withIgnorePaths("id")
-                .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT)
                 .withIgnoreCase();
 
+        Set<String> ignores = new HashSet<>();
+        Set<String> supportedDefaultValue = new HashSet<>();
         boolean ignoreNoDeleteAnnotation = false;
-        if (getEntityClass().isAnnotationPresent(Find.class)) {
-            Find find = getEntityClass().getAnnotation(Find.class);
-            ignoreNoDeleteAnnotation = find.ignoreNoDeleteAnnotation();
+        boolean ignoreDefaultValue = true;
 
-            Set<String> ignores = new HashSet<>();
+        if (getEntityClass().isAnnotationPresent(Find.class)) {
+            Find findAnnotation = getEntityClass().getAnnotation(Find.class);
+            ignoreNoDeleteAnnotation = findAnnotation.ignoreNoDeleteAnnotation();
+            ignoreDefaultValue = findAnnotation.ignoreDefaultValue();
+            supportedDefaultValue.addAll(Arrays.asList(findAnnotation.supportedDefaultValueForAttributes()));
+
             if (matcher.getIgnoredPaths() != null && !matcher.getIgnoredPaths().isEmpty()) {
                 ignores.addAll(matcher.getIgnoredPaths());
             }
 
-            if (find.ignoreAttributes().length > 0) {
-                ignores.addAll(Arrays.asList(find.ignoreAttributes()));
+            if (findAnnotation.ignoreAttributes().length > 0) {
+                ignores.addAll(Arrays.asList(findAnnotation.ignoreAttributes()));
             }
+        }
 
-            if (!ignoreWithFindAttributeAnnotation.isEmpty()) {
-                ignores.addAll(ignoreWithFindAttributeAnnotation
-                        .stream()
-                        .map(Field::getName)
-                        .collect(Collectors.toList())
-                );
-            }
+        if (!findAttributeAnnotations.isEmpty()) {
+            findAttributeAnnotations.forEach(field -> {
+                FindAttribute findAttributeAnnotation = field.getAnnotation(FindAttribute.class);
+                if (findAttributeAnnotation.ignore()) {
+                    ignores.add(field.getName());
+                } else {
+                    if (!findAttributeAnnotation.supportedDefaultValue()) {
+                        supportedDefaultValue.add(field.getName());
+                    }
+                }
+            });
+        }
 
-            if (!ignores.isEmpty()) {
-                matcher = matcher.withIgnorePaths(ignores.toArray(new String[0]));
-            }
+        // ignore default value
+        if (ignoreDefaultValue) {
+            matcher = matcher.withIgnoreNullValues();
+            getFields(entityClass, field -> (field.getType() == int.class
+                    || field.getType() == long.class || field.getType() == boolean.class))
+                .forEach(field -> {
+                    field.setAccessible(true);
+                    try {
+                        if (field.getType() == int.class) {
+                            if (((int) field.get(entity)) == 0) {
+                                ignores.add(field.getName());
+                            }
+                        } else if (field.getType() == long.class) {
+                            if (((long) field.get(entity)) == 0) {
+                                ignores.add(field.getName());
+                            }
+                        } else if (field.getType() == boolean.class) {
+                            if (((long) field.get(entity)) == 0) {
+                                ignores.add(field.getName());
+                            }
+                        }
+                    } catch (IllegalAccessException e) {
+                        log.error(e.getMessage());
+                    }
+                });
+        }
+
+        ignores.removeAll(supportedDefaultValue);
+        if (!ignores.isEmpty()) {
+            matcher = matcher.withIgnorePaths(ignores.toArray(new String[0]));
         }
 
         if (!ignoreNoDeleteAnnotation && getEntityClass().isAnnotationPresent(NoDelete.class)) {
