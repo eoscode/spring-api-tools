@@ -150,7 +150,8 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping("/query")
 	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
-											  @RequestParam(value = "distinct", required = false) boolean distinct,
+											  @RequestParam(value = "distinct", required = false,
+													  defaultValue = "true") boolean distinct,
 											  @PageableDefault Pageable pageable) {
 		Page<Entity> page = getService().query(query, pageable, distinct);
 		return ResponseEntity.ok(page);
