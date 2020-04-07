@@ -101,7 +101,7 @@ ele será selecionado de forma prioritária.
 
 ### Repository
 
-As classes `Repository`, devem ser especializações da implementação do framework 
+A classe `Repository`, deve especializar a implementação do framework 
 `com.eoscode.springapitools.data.repository.Repository`.
 
 ```java
@@ -117,7 +117,7 @@ public interface CityRepository extends Repository<City, String> {}
 
 ### Service
 
-As classes `Service`, devem ser especializações de `AbstractService`, que implementa as rotinas para `save, update, delete,
+A classe `Service`, deve especializar `AbstractService`, que implementa as rotinas para `save, update, delete,
 find, findById, query e etc`.
 
 ```java
@@ -134,7 +134,7 @@ public class CityService extends AbstractService<CityRepository, City, String> {
 
 ### Resource
 
-As classes `Resource`, devem ser especializações de `AbstractResource` ou `AbstractRepositoryResource`.
+A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepositoryResource`.
 
 <table>
     <tr>
@@ -248,7 +248,7 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 
 ## Consultas
 
-Atualmente todas as consultas são realizadas com operador lógico 'and'.
+Atualmente todas as consultas são realizadas com operador lógico `and.
 
 ### {path}/ e {path}/find
 
@@ -355,9 +355,9 @@ Obs.:
 }
 ```
 
-O Layout das consultas, seguem a seguinte definição: 
+O Layout da consulta, segue a seguinte definição: 
 
-**Query**
+**Query com método POST**
 ```json
 {
   "filters": [
