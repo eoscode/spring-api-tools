@@ -248,7 +248,7 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 
 ## Consultas
 
-Atualmente todas as consultas são realizadas com operador lógico `and.
+Atualmente todas as consultas são realizadas com operador lógico `and`.
 
 ### {path}/ e {path}/find
 
