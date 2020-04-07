@@ -11,7 +11,7 @@
  * Desenvolvimento de API para CRUD sem necessidade de implementar código. Suporte aos métodos GET, POST,
  DELETE, PUT e PATH 
  * Suporte a NoDelete annotation, para gerenciar delete lógico. 
- * Suporte a Find e FindAttribute annotation para configurar padrão de busca.
+ * Suporte a Find e FindAttribute annotation para configurar filtros.
  * Configuração básica para exception handler, através de @RestControllerAdvice.
  * Suporte a query nos resources sem a implementação de código. Resource {path}/query, através de método GET e POST 
  
@@ -92,16 +92,16 @@ necessário informar o `@NamedEntityGraph` com os seguintes nomes:
 *  {Entity}.findById - Altera o comportamento default para busca por id.
 *  {Entity}.findDetailById - Altera o comportamento default da busca detalhada por id.
 
-Obs.: 
-+ Os `@NamedEntityGraph` devem ser declarados com nome da entidade + nome da query. Ex.: `{Entity}.findById`.
-+ Vocë deve definir o `findDetailByid` quando for necessário um carregamento diferenciado em relação
-ao mapeamento da entidade. 
+Observações: 
++ Os `@NamedEntityGraph` devem ser declarados da seguite forma: nome da entidade + nome da query. Ex.: `{Entity}.findById`.
++ O `findDetailByid` deve ser definido quando for necessário um carregamento diferente do mapeamento da entidade,
+realizado através da annotation `@Lazy` do Spring. 
 + Por padrão, será utilizado o `findById` da implementação do `Spring Data`, caso identificado um `@NamedEntityGraph`, 
-ele será selecionado de forma prioritário.
+ele será selecionado de forma prioritária.
 
 ### Repository
 
-As classes `Repository` devem ser especializações da implementação do framework 
+As classes `Repository`, devem ser especializações da implementação do framework 
 `com.eoscode.springapitools.data.repository.Repository`.
 
 ```java
@@ -117,7 +117,7 @@ public interface CityRepository extends Repository<City, String> {}
 
 ### Service
 
-As classes `Service` devem ser especializações de `AbstractService`, que implementa as rotinas para `save, update, delete,
+As classes `Service`, devem ser especializações de `AbstractService`, que implementa as rotinas para `save, update, delete,
 find, findById, query e etc`.
 
 ```java
@@ -134,7 +134,7 @@ public class CityService extends AbstractService<CityRepository, City, String> {
 
 ### Resource
 
-As classes `Resource` devem ser especializações de `AbstractResource` ou `AbstractRepositoryResource`.
+As classes `Resource`, devem ser especializações de `AbstractResource` ou `AbstractRepositoryResource`.
 
 <table>
     <tr>
@@ -153,7 +153,7 @@ As classes `Resource` devem ser especializações de `AbstractResource` ou `Abst
         <td>{path}/detail/{id}</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza consulta detalhada pelo id da entidade. Utiliza `findDetailByI` definido através de `@NamedEntityGraph`. </td>
+        <td>Realiza consulta detalhada pelo id da entidade. Utiliza <b>findDetailByI</b> definido através de <b>@NamedEntityGraph</b>. </td>
     </tr>
     <tr>
         <td>{path}/</td>
@@ -171,7 +171,7 @@ As classes `Resource` devem ser especializações de `AbstractResource` ou `Abst
         <td>{path}/</td>
         <td>PATH</td>
         <td>204</td>
-        <td>Atualiza de forma parcial a entidade.</td>
+        <td>Atualiza a entidade de forma parcial, aplicando o update apenas aos atributos enviados.</td>
     </tr>
     <tr>
         <td>{path}/{id}</td>
@@ -183,21 +183,21 @@ As classes `Resource` devem ser especializações de `AbstractResource` ou `Abst
         <td>{path}/</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza filto nos atributos da entidade. Também pode ser acessodo através de `{path}/{id}`. Por padrão,
-        utiliza valores exatos, ou seja, o operador `=` (igual).
+        <td>Realiza filto nos atributos da entidade. Também pode ser acessodo através de <b>{path}/{id}</b>. Por padrão,
+        utiliza valores exatos, ou seja, o operador <b>=</b> (igual).
         </td>
     </tr>
    <tr>
         <td>{path}/query</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores).</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.</td>
     </tr>
     <tr>
         <td>{path}/query</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores). 
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>. 
         Obs.: Utiliza requisição JSON.</td>
     </tr>
     <tr>
@@ -248,6 +248,8 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 
 ## Consultas
 
+Atualmente todas as consultas são realizadas com operador lógico 'and'.
+
 ### {path}/ e {path}/find
 
 Funcionalidade disponível em `AbstractResouce` e `AbstractRepositoryResource`, que possibilita aplicar filtros nos 
@@ -265,9 +267,7 @@ A annotation `FindAttribute` possui um comportamento similiar ao `Find`, porém,
 
 ### {path}/query
 
-Diferente do `/find`, o suporte a `/query`, permite realizar consultas complexas.
-
-Operadores suportados:
+Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
 <a name=“operadores”><a/>
 
 |Operador   |Descrição           |GET |POST|
@@ -288,68 +288,112 @@ Operadores suportados:
 #### Exemplos:
 ##### Método **GET**
 
-* Consultar cidades com população  maior ou igual a `40000`
+* Listar as cidades com população  maior ou igual a `40000` habitantes, ordenados de forma decrescente
 ```http request
-/api/cities/query?opt=population>=40000
+/query?opt=population>20000&sort=population,desc
 ```
-* Consultar cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000`
+* Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```http request
 /api/cities/query?opt=stateId=52e0a6a7-d72d-4b0f-bab9-aebfcf888e21&population>20000
 ```  
-* Consultar cidades com população entre `40000` e `550000`
+* Listar as cidades com população entre `40000` e `550000` habitantes
 ```http request
 /api/cities/query?opt=population$btw40000;55000
 ```  
-* Consultar estados que possuem cidades com população maior ou igual a `50000`
+* Listar os estados que possuem cidades com população maior ou igual a `50000` habitantes
 ```http request
-/api/state/query?opt=cities.population>=50000
+/api/state/query?opt=cities.population>=50000&distinct=true
 ```  
+Obs.: 
+* As consultas suportam `org.springframework.data.domain.Pageable` (parâmetro page e size), com os valores default do Spring.
+* As consultas suportam `org.springframework.data.domain.Sort`, com os valores default do Spring.
+* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
 
 ##### Método **POST**
 
-* Consultar cidades com população  maior ou igual a `40000`
+* Listar cidades com população  maior ou igual a `40000` habitantes
 ```json
 {
-"filters": [
-   {
-    "field": "population",
-    "operator": ">=",
-    "value": 40000
-   }
-  ],
-  "distinct": true
+	"filters": [
+		{
+			"field": "population",
+			"operator": ">=",
+			"value": 40000
+		}
+	],
+	"distinct": true
 }
 ```
-* Consultar cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000`
+* Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```json
 {
-"filters": [
-  {
-    "field": "stateId",
-    "operator": "=",
-    "value": "52e0a6a7-d72d-4b0f-bab9-aebfcf888e21"
-   },
-   {
-    "field": "population",
-    "operator": ">",
-    "value": 20000
-   }
-  ],
-  "distinct": true
+	"filters": [
+		{
+			"field": "stateId",
+			"operator": "=",
+			"value": "52e0a6a7-d72d-4b0f-bab9-aebfcf888e21"
+		},
+		{
+			"field": "population",
+			"operator": ">",
+			"value": 20000
+		}
+	],
+	"distinct": true
 }
 ```
-* Consultar cidades com população entre `40000` e `550000`
-```http request
+* Listar as cidades com população entre `40000` e `550000` habitantes
 ```json
 {
-"filters": [
-  {
-    "field": "population",
-    "operator": "$btw",
-    "value": "40000;55000"
-   }
-  ],
-  "distinct": true
+	"filters": [
+		{
+			"field": "population",
+			"operator": "$btw",
+			"value": "40000;55000"
+		}
+	]
 }
 ```
 
+O Layout das consultas, seguem a seguinte definição: 
+
+**Query**
+```json
+{
+	"filters": [
+		{
+			"field": "population",
+			"operator": ">=",
+			"value": 50000
+		}
+	],
+	"sorts": [
+		{
+			"field": "population",
+			"direction": "ASC"
+		}	
+	],
+	"distinct": true
+}
+```
+
+Obs.:
+* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
+* O tipo `Sort`, suporta `direction` com valores ASC e DESC.
+* Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
+atributo filho (**ainda não suportado para o tipo Sort**).
+
+Listar os estados que possuem cidades com população maior que 50000 habitantes.
+
+```json
+{
+	"filters": [
+		{
+			"field": "cities.population",
+			"operator": ">=",
+			"value": 50000
+		}
+	],
+	"distinct": true
+}
+```
