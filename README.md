@@ -1,6 +1,6 @@
 # Spring API Tools
 
-<p align="center">
+<p>
   Simplifica o desenvolvimento de APIs, através de abstrações e padronizações que normalmente realizamos de forma
   repetitiva, durante o desenvolvimento.
 </p>
@@ -13,9 +13,32 @@
  * Suporte a NoDelete annotation, para gerenciar delete lógico. 
  * Suporte a Find e FindAttribute annotation para configurar padrão de busca.
  * Configuração básica para exception handler, através de @RestControllerAdvice.
- * Suporte a query nos resources sem a implementação de código. Resource {EntityType}/query, através de método GET e POST 
+ * Suporte a query nos resources sem a implementação de código. Resource {path}/query, através de método GET e POST 
  
 ## Como utilizar
+
+Para começar, devemos configurar o Spring para carregar as configurações do `Spring-API-Tools`. 
+
+### Dependência
+```xml
+<dependency>
+    <groupId>com.github.eoscode</groupId>
+    <artifactId>spring-api-tools</artifactId>
+    <version>1.0.5-RELEASE</version>
+</dependency>
+```
+
+### Carregando o spring-api-tools com `@Configuration` do Spring
+```java
+package com.eoscode.springapitools.sample.config;
+
+import com.eoscode.springapitools.config.SpringApiToolsScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SpringApiToolsScanConfig extends SpringApiToolsScan {
+}
+```
 
 ### Entity
 
@@ -62,6 +85,19 @@ public class City implements Identifier<String> {
 
 }
 ```
+#### @NamedEntityGraphs
+Também é possível utilizar `@NamedEntityGraphs` para ajustar alguns comportamentos defautl. Para isso, é
+necessário informar o `@NamedEntityGraph` com os seguintes nomes:
+
+*  {Entity}.findById - Altera o comportamento default para busca por id.
+*  {Entity}.findDetailById - Altera o comportamento default da busca detalhada por id.
+
+Obs.: 
++ Os `@NamedEntityGraph` devem ser declarados com nome da entidade + nome da query. Ex.: `{Entity}.findById`.
++ Vocë deve definir o `findDetailByid` quando for necessário um carregamento diferenciado em relação
+ao mapeamento da entidade. 
++ Por padrão, será utilizado o `findById` da implementação do `Spring Data`, caso identificado um `@NamedEntityGraph`, 
+ele será selecionado de forma prioritário.
 
 ### Repository
 
@@ -93,12 +129,85 @@ import com.eoscode.springapitools.service.AbstractService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CityService extends AbstractService<StateRepository, City, String> {}
+public class CityService extends AbstractService<CityRepository, City, String> {}
 ```
 
 ### Resource
 
 As classes `Resource` devem ser especializações de `AbstractResource` ou `AbstractRepositoryResource`.
+
+<table>
+    <tr>
+        <th>Path</th>
+        <th>Método</th>
+        <th>Resposta HTTP</th>
+        <th>Descrição</th>
+    </tr>
+    <tr>
+        <td>{path}/{id}</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza consulta pelo id da entidade.</td>
+    </tr>
+    <tr>
+        <td>{path}/detail/{id}</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza consulta detalhada pelo id da entidade. Utiliza `findDetailByI` definido através de `@NamedEntityGraph`. </td>
+    </tr>
+    <tr>
+        <td>{path}/</td>
+        <td>POST</td>
+        <td>201</td>
+        <td>Salva a entidade. Devolve o header Location, indicando o caminho para o recurso.</td>
+    </tr>
+    <tr>
+        <td>{path}/</td>
+        <td>PUT</td>
+        <td>204</td>
+        <td>Atualiza a entidade.</td>
+    </tr>
+    <tr>
+        <td>{path}/</td>
+        <td>PATH</td>
+        <td>204</td>
+        <td>Atualiza de forma parcial a entidade.</td>
+    </tr>
+    <tr>
+        <td>{path}/{id}</td>
+        <td>DELETE</td>
+        <td>204</td>
+        <td>Deleta pelo id da entidade.</td>
+    </tr>
+    <tr>
+        <td>{path}/</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza filto nos atributos da entidade. Também pode ser acessodo através de `{path}/{id}`. Por padrão,
+        utiliza valores exatos, ou seja, o operador `=` (igual).
+        </td>
+    </tr>
+   <tr>
+        <td>{path}/query</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores).</td>
+    </tr>
+    <tr>
+        <td>{path}/query</td>
+        <td>POST</td>
+        <td>200</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores). 
+        Obs.: Utiliza requisição JSON.</td>
+    </tr>
+    <tr>
+        <td>{path}/all</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Lista todas as entidades associadas ao recurso.</td>
+    </tr>          
+</table>
+
 
 #### AbstractResource
 
@@ -159,26 +268,27 @@ A annotation `FindAttribute` possui um comportamento similiar ao `Find`, porém,
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas complexas.
 
 Operadores suportados:
+<a name=“operadores”><a/>
 
-|operador   |descrição           |GET |POST|
+|Operador   |Descrição           |GET |POST|
 |-----------|--------------------|----|----|
 |\>         | maior que          |[x] |[x] |
 |>=         | maior ou igual que |[x] |[x] |
 |<          | menor que          |[x] |[x] |
 |<=         | menor ou igual que |[x] |[x] |
-|=          | igual              |[x] |[x] |
+|=          | igual a            |[x] |[x] |
 |!=         | diferente de       |[x] |[x] |
-|$like      | contémm o valor    |[x] |[x] |
+|$like      | contém o valor     |[x] |[x] |
 |$notLike   | não contém o valor |[x] |[x] |
-|$isNull    | valor é null       |[x] |[x] |
-|$isNotNull | não é valor null   |[x] |[x] |
+|$isNull    | valor é NULL       |[x] |[x] |
+|$isNotNull | valor não é NULL   |[x] |[x] |
 |$btw       | entre valores      |[ ] |[x] |
 |$in        | algum dos valores  |[ ] |[x] |
 
 #### Exemplos:
 ##### Método **GET**
 
-* Consultar cidades com população  maior ou igual `40000`
+* Consultar cidades com população  maior ou igual a `40000`
 ```http request
 /api/cities/query?opt=population>=40000
 ```
@@ -197,7 +307,7 @@ Operadores suportados:
 
 ##### Método **POST**
 
-* Consultar cidades com população  maior ou igual `40000`
+* Consultar cidades com população  maior ou igual a `40000`
 ```json
 {
 "filters": [
@@ -210,7 +320,7 @@ Operadores suportados:
   "distinct": true
 }
 ```
-* Consultar cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que 20000
+* Consultar cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000`
 ```json
 {
 "filters": [
@@ -228,3 +338,18 @@ Operadores suportados:
   "distinct": true
 }
 ```
+* Consultar cidades com população entre `40000` e `550000`
+```http request
+```json
+{
+"filters": [
+  {
+    "field": "population",
+    "operator": "$btw",
+    "value": "40000;55000"
+   }
+  ],
+  "distinct": true
+}
+```
+
