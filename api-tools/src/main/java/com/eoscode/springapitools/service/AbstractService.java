@@ -368,7 +368,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         if (ignoreDefaultValue) {
             matcher = matcher.withIgnoreNullValues();
             getFields(entityClass, field -> (field.getType() == int.class
-                    || field.getType() == long.class || field.getType() == boolean.class))
+                    || field.getType() == long.class || field.getType() == boolean.class
+                    || field.getType() == double.class))
                 .forEach(field -> {
                     field.setAccessible(true);
                     try {
@@ -381,7 +382,11 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
                                 ignores.add(field.getName());
                             }
                         } else if (field.getType() == boolean.class) {
-                            if (((long) field.get(entity)) == 0) {
+                            if (!((boolean) field.get(entity))) {
+                                ignores.add(field.getName());
+                            }
+                        } else if (field.getType() == double.class) {
+                            if (((double) field.get(entity)) == 0.0) {
                                 ignores.add(field.getName());
                             }
                         }
