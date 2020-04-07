@@ -41,4 +41,7 @@ public class City implements Identifier<String> {
     @Column(name = "population")
     private long population;
 
+    @Column(name = "rate")
+    private double rate;
+
 }
