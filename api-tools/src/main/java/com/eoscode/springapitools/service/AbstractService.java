@@ -443,7 +443,13 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     private List<Sort.Order> getDefaultSort(List<SortDefinition> sorts) {
         List<Sort.Order> orders = new ArrayList<>();
         if (sorts != null && sorts.size() > 0) {
-            sorts.forEach(sortDefinition -> orders.add(Sort.Order.asc(sortDefinition.getField())));
+            sorts.forEach(sortDefinition -> {
+                if (sortDefinition.getDirection() == SortDefinition.Direction.ASC) {
+                    orders.add(Sort.Order.asc(sortDefinition.getField()));
+                } else {
+                    orders.add(Sort.Order.desc(sortDefinition.getField()));
+                }
+            });
         }
         return orders;
     }
@@ -453,6 +459,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             return null;
         }
         List<Sort.Order> orders = getDefaultSort(sorts);
+        pageable.getSort().forEach(orders::add);
         return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
     }
 
