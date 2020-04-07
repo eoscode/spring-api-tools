@@ -268,7 +268,7 @@ A annotation `FindAttribute` possui um comportamento similiar ao `Find`, porém,
 ### {path}/query
 
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
-<a name=“operadores”><a/>
+<a name=“#operadores”><a/>
 
 |Operador   |Descrição           |GET |POST|
 |-----------|--------------------|----|----|
@@ -288,7 +288,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
 #### Exemplos:
 ##### Método **GET**
 
-* Listar as cidades com população  maior ou igual a `40000` habitantes, ordenados de forma decrescente
+* Listar as cidades com população  maior ou igual a `40000` habitantes, ordenado pelo número de habitantes de forma decrescente
 ```http request
 /query?opt=population>20000&sort=population,desc
 ```
@@ -314,44 +314,44 @@ Obs.:
 * Listar cidades com população  maior ou igual a `40000` habitantes
 ```json
 {
-	"filters": [
-		{
-			"field": "population",
-			"operator": ">=",
-			"value": 40000
-		}
-	],
-	"distinct": true
+  "filters": [
+    {
+     "field": "population",
+     "operator": ">=",
+     "value": 40000
+    }
+  ],
+"distinct": true
 }
 ```
 * Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```json
 {
-	"filters": [
-		{
-			"field": "stateId",
-			"operator": "=",
-			"value": "52e0a6a7-d72d-4b0f-bab9-aebfcf888e21"
-		},
-		{
-			"field": "population",
-			"operator": ">",
-			"value": 20000
-		}
-	],
-	"distinct": true
+  "filters": [
+    {
+     "field": "stateId",
+     "operator": "=",
+     "value": "52e0a6a7-d72d-4b0f-bab9-aebfcf888e21"
+    },
+    {
+     "field": "population",
+     "operator": ">",
+     "value": 20000
+    }
+  ],
+  "distinct": true
 }
 ```
 * Listar as cidades com população entre `40000` e `550000` habitantes
 ```json
 {
-	"filters": [
-		{
-			"field": "population",
-			"operator": "$btw",
-			"value": "40000;55000"
-		}
-	]
+  "filters": [
+    {
+     "field": "population",
+     "operator": "$btw",
+     "value": "40000;55000"
+    }
+  ]
 }
 ```
 
@@ -360,20 +360,20 @@ O Layout das consultas, seguem a seguinte definição:
 **Query**
 ```json
 {
-	"filters": [
-		{
-			"field": "population",
-			"operator": ">=",
-			"value": 50000
-		}
-	],
-	"sorts": [
-		{
-			"field": "population",
-			"direction": "ASC"
-		}	
-	],
-	"distinct": true
+  "filters": [
+    {
+     "field": "population",
+     "operator": ">=",
+     "value": 50000
+    }
+  ],
+  "sorts": [
+    {
+     "field": "population",
+     "direction": "ASC"
+    }	
+  ],
+  "distinct": true
 }
 ```
 
@@ -387,13 +387,13 @@ Listar os estados que possuem cidades com população maior que 50000 habitantes
 
 ```json
 {
-	"filters": [
-		{
-			"field": "cities.population",
-			"operator": ">=",
-			"value": 50000
-		}
-	],
-	"distinct": true
+  "filters": [
+    {
+     "field": "cities.population",
+     "operator": ">=",
+     "value": 50000
+    }
+  ],
+  "distinct": true
 }
 ```
