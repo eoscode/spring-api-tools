@@ -260,10 +260,10 @@ para ignorar o valor default.
 Ex.: Para atributo do tipo **int** e **long**, o valor zero é ignorado, para **boolean** o valor false.
 
 Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por default, informa que
-os valores default para tipo primitivo, deve ser ignorados. Se necessário, podemos configurar uma lista de atributos que 
+os valores default para tipo primitivo, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que 
 devem ser exceção ao tratamento default `supportedDefaultValueForAttributes`.
 
-A annotation `FindAttribute` possui um comportamento similiar ao `Find`, porém, aplicado aos atributos.   
+A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém, aplicado aos atributos.   
 
 ### {path}/query
 
