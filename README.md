@@ -95,7 +95,7 @@ necessário informar o `@NamedEntityGraph` com os seguintes nomes:
 Observações: 
 + Os `@NamedEntityGraph` devem ser declarados da seguite forma: nome da entidade + nome da query. Ex.: `{Entity}.findById`.
 + O `findDetailByid` deve ser definido quando for necessário um carregamento diferente do mapeamento da entidade,
-realizado através da annotation `@Lazy` do Spring. 
+realizado através da annotation `@Lazy` do JPA. 
 + Por padrão, será utilizado o `findById` da implementação do `Spring Data`, caso identificado um `@NamedEntityGraph`, 
 ele será selecionado de forma prioritária.
 
