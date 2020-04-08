@@ -1,6 +1,7 @@
 package com.eoscode.springapitools.data.filter;
 
 import javax.persistence.criteria.*;
+import java.math.BigDecimal;
 
 @SuppressWarnings("rawtypes")
 public class DefaultSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {
@@ -61,6 +62,60 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
             return criteriaBuilder.isNull(path);
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.NOT_NULL.getValue())) {
             return criteriaBuilder.isNotNull(path);
+        } else if (criteria.getOperator().equalsIgnoreCase(Operator.BTW.getValue())) {
+            String[] values = criteria.getValue().toString().split(";");
+            if (path.getJavaType() == int.class || path.getJavaType() == Integer.class) {
+                return criteriaBuilder.between(path, Integer.parseInt(values[0]),
+                        Integer.parseInt(values[1]));
+            } else if (path.getJavaType() == long.class || path.getJavaType() == Long.class) {
+                return criteriaBuilder.between(path, Long.parseLong(values[0]),
+                        Long.parseLong(values[1]));
+            } else if (path.getJavaType() == double.class || path.getJavaType() == Double.class) {
+                return criteriaBuilder.between(path, Double.parseDouble(values[0]),
+                        Double.parseDouble(values[1]));
+            } else if (path.getJavaType() == BigDecimal.class) {
+                return criteriaBuilder.between(path, new BigDecimal(values[0]),
+                        new BigDecimal(values[1]));
+            } else {
+                return criteriaBuilder.between(path, values[0], values[1]);
+            }
+        } else if (criteria.getOperator().equalsIgnoreCase(Operator.IN.getValue())) {
+            if (path.getJavaType() == int.class || path.getJavaType() == Integer.class) {
+                CriteriaBuilder.In<Integer> inClause = criteriaBuilder.in(path);
+                String[] values = criteria.getValue().toString().split(";");
+                for (String value : values) {
+                    inClause.value(Integer.parseInt(value));
+                }
+                return inClause;
+            } else if (path.getJavaType() == long.class || path.getJavaType() == Long.class) {
+                CriteriaBuilder.In<Long> inClause = criteriaBuilder.in(path);
+                String[] values = criteria.getValue().toString().split(";");
+                for (String value : values) {
+                    inClause.value(Long.parseLong(value));
+                }
+                return inClause;
+            } else if (path.getJavaType() == double.class || path.getJavaType() == Double.class) {
+                CriteriaBuilder.In<Double> inClause = criteriaBuilder.in(path);
+                String[] values = criteria.getValue().toString().split(";");
+                for (String value : values) {
+                    inClause.value(Double.parseDouble(value));
+                }
+                return inClause;
+            } else if (path.getJavaType() == BigDecimal.class) {
+                CriteriaBuilder.In<BigDecimal> inClause = criteriaBuilder.in(path);
+                String[] values = criteria.getValue().toString().split(";");
+                for (String value : values) {
+                    inClause.value(new BigDecimal(value));
+                }
+                return inClause;
+            } else if (path.getJavaType() == String.class) {
+                CriteriaBuilder.In<String> inClause = criteriaBuilder.in(path);
+                String[] values = criteria.getValue().toString().split(";");
+                for (String value : values) {
+                    inClause.value(value);
+                }
+                return inClause;
+            }
         }
         return null;
     }

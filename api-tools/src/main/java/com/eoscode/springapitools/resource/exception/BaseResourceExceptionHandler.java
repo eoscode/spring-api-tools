@@ -3,6 +3,9 @@ package com.eoscode.springapitools.resource.exception;
 import com.eoscode.springapitools.service.exceptions.AuthorizationException;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.service.exceptions.ValidationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -10,67 +13,93 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.net.URI;
 
 public class BaseResourceExceptionHandler {
 
+	protected final Log log = LogFactory.getLog(this.getClass());
+
+	protected URI getPathURI() {
+		return ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
+	}
+
+	protected String getPath() {
+		return ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
+	}
+
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<StandardError> objectNotFound(EntityNotFoundException e, HttpServletRequest request) {
+		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(),
+				"Not found", e.getMessage(), request.getRequestURI());
 
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(),
-				"Não encontrado", e.getMessage(), request.getRequestURI());
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+		log.error("objectNotFound -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<StandardError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
-
-		ValidationError err = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
-				"Erro de validação", e.getMessage(), request.getRequestURI());
-		for (FieldError x : e.getBindingResult().getFieldErrors()) {
-			err.addError(x.getField(), x.getDefaultMessage());
+		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+				"Validation error", e.getMessage(), request.getRequestURI());
+		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+			validationError.addError(fieldError.getField(), fieldError.getDefaultMessage());
 		}
-		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(err);
+
+		log.error("validation -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
-	public ResponseEntity<StandardError> constrantViolation(ConstraintViolationException e) {
+	public ResponseEntity<StandardError> constraintViolation(ConstraintViolationException e) {
+		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+				"Validation error", e.getMessage(), getPathURI().toString());
 
-		ValidationError err = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
-				"Erro de validação", e.getMessage(), "");
-
-		for (ConstraintViolation x : e.getConstraintViolations()) {
-			err.addError("", x.getMessage());
+		if (e.getConstraintViolations() != null) {
+			e.getConstraintViolations().forEach(constraintViolation -> validationError.addError("", constraintViolation.getMessage()));
 		}
-		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(err);
+
+		log.error("constraintViolation -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<StandardError> dataIntegrityViolationException(DataIntegrityViolationException e) {
+		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.CONFLICT.value(),
+				"Database error", e.getLocalizedMessage(), getPath());
+
+		log.error("dataIntegrityViolationException -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(validationError);
 	}
 
 	@ExceptionHandler(ValidationException.class)
 	public ResponseEntity<StandardError> validation(ValidationException e, HttpServletRequest request) {
+		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+				"Validation error", e.getMessage(), request.getRequestURI());
+		validationError.addError("", e.getMessage());
 
-		ValidationError err = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
-				"Erro de validação", e.getMessage(), request.getRequestURI());
-		err.addError("", e.getMessage());
-		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(err);
+		log.error("validation -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
 	@ExceptionHandler(AuthorizationException.class)
 	public ResponseEntity<StandardError> authorization(AuthorizationException e, HttpServletRequest request) {
+		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED.value(),
+				"Access denied", e.getMessage(), request.getRequestURI());
 
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED.value(),
-				"Acesso negado", e != null ? e.getMessage() : null, request.getRequestURI());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
+		log.error("authorization -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(standardError);
 	}
 
 	@ExceptionHandler({UsernameNotFoundException.class, AuthenticationException.class})
 	public ResponseEntity<StandardError> objectNotFound(AuthenticationException e, HttpServletRequest request) {
+		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.FORBIDDEN.value(),
+				"Access denied", e.getMessage(), request.getRequestURI());
 
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.FORBIDDEN.value(),
-				"Acesso negado", e.getMessage(), request.getRequestURI());
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+		log.error("objectNotFound -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(standardError);
 	}
 
 }

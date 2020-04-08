@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface Find {
     String[] ignoreAttributes() default {};
     boolean ignoreNoDeleteAnnotation() default false;
+    boolean ignoreDefaultValue() default true;
+    String[] supportedDefaultValueForAttributes() default {};
 }

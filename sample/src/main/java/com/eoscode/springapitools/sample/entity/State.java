@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -25,6 +26,7 @@ public class State implements Identifier<String> {
     @GeneratedValue(generator = "uuid")
     private String id;
 
+    @NotNull
     @Column(name = "name", length = 60)
     private String name;
 
