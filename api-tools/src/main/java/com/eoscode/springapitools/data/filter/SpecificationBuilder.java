@@ -15,11 +15,10 @@ import java.util.stream.Collectors;
 public class SpecificationBuilder<T> {
 
     private Boolean distinct;
-
     private final List<FilterDefinition> filters;
     private final Map<String, List<FilterDefinition>> joins;
-
     private final List<SortDefinition> sorts;
+    private DefaultSpecification.Operator operator;
 
     private Specification<T> result = null;
 
@@ -27,6 +26,7 @@ public class SpecificationBuilder<T> {
         filters = new ArrayList<>();
         joins = new HashMap<>();
         sorts = new ArrayList<>();
+        operator = DefaultSpecification.Operator.AND;
     }
 
     public SpecificationBuilder(boolean distinct) {
@@ -36,6 +36,16 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder distinct(boolean distinct) {
         this.distinct = distinct;
+        return this;
+    }
+
+    public SpecificationBuilder withOr() {
+        this.operator = DefaultSpecification.Operator.OR;
+        return this;
+    }
+
+    public SpecificationBuilder withAnd() {
+        this.operator = DefaultSpecification.Operator.AND;
         return this;
     }
 
@@ -84,6 +94,9 @@ public class SpecificationBuilder<T> {
         distinct(queryDefinition.isDistinct())
                 .filters(queryDefinition.getFilters())
                 .sorts(queryDefinition.getSorts());
+        if ("or".equalsIgnoreCase(DefaultSpecification.Operator.OR.getValue())) {
+            withOr();
+        }
         return build();
     }
 
@@ -100,7 +113,11 @@ public class SpecificationBuilder<T> {
             if (result == null) {
                 result = Specification.where(join(key, filters));
             } else {
-                result = Specification.where(result).and(join(key, filters));
+                if (operator == DefaultSpecification.Operator.OR) {
+                    result = Specification.where(result).or(join(key, filters));
+                } else {
+                    result = Specification.where(result).and(join(key, filters));
+                }
             }
         });
 
@@ -119,8 +136,13 @@ public class SpecificationBuilder<T> {
                     .map(DefaultSpecification::new)
                     .collect(Collectors.toList());
 
-            return builder.and(specs.stream().map(item -> item.toPredicate(root, query, builder)).toArray(Predicate[]::new));
-
+            Predicate[] predicates = specs.stream().map(item -> item.toPredicate(root, query, builder))
+                    .toArray(Predicate[]::new);
+            if (operator == DefaultSpecification.Operator.OR) {
+                return builder.or(predicates);
+            } else {
+                return builder.and(predicates);
+            }
         };
     }
 
@@ -136,7 +158,13 @@ public class SpecificationBuilder<T> {
                     .map(filter -> new DefaultSpecification(join, filter))
                     .collect(Collectors.toList());
 
-            return builder.and(specs.stream().map(item -> item.toPredicate(root, query, builder)).toArray(Predicate[]::new));
+            Predicate[] predicates = specs.stream().map(item -> item.toPredicate(root, query, builder))
+                    .toArray(Predicate[]::new);
+            if (operator == DefaultSpecification.Operator.OR) {
+                return builder.or(predicates);
+            } else {
+                return builder.and(predicates);
+            }
         };
     }
 
