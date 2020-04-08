@@ -7,6 +7,7 @@ public class QueryDefinition {
     private Boolean distinct;
     private List<FilterDefinition> filters;
     private List<SortDefinition> sorts;
+    private String operator;
 
     public QueryDefinition() {}
 
@@ -35,6 +36,14 @@ public class QueryDefinition {
 
     public void setSorts(List<SortDefinition> sorts) {
         this.sorts = sorts;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
     }
 
 }
