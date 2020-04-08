@@ -191,13 +191,13 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores).</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.</td>
     </tr>
     <tr>
         <td>{path}/query</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos [operadores](#operadores). 
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>. 
         Obs.: Utiliza requisição JSON.</td>
     </tr>
     <tr>
