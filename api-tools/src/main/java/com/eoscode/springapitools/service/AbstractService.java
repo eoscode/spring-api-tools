@@ -4,10 +4,7 @@ import com.eoscode.springapitools.data.domain.Find;
 import com.eoscode.springapitools.data.domain.FindAttribute;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.domain.NoDelete;
-import com.eoscode.springapitools.data.filter.FilterDefinition;
-import com.eoscode.springapitools.data.filter.QueryDefinition;
-import com.eoscode.springapitools.data.filter.SortDefinition;
-import com.eoscode.springapitools.data.filter.SpecificationBuilder;
+import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
@@ -224,10 +221,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return getRepository().findAll(example, pageable);
     }
 
-    public Page<Entity> query(String query, Pageable pageable, Boolean distinct) {
+    public Page<Entity> query(String query, Pageable pageable, Boolean distinct, Map<String, String> params) {
         List<FilterDefinition> criteria = new ArrayList<>();
         Pattern pattern = Pattern.compile(
-                "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*),",
+                "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*|\\w+.?\\w*),",
                 Pattern.UNICODE_CHARACTER_CLASS);
         Matcher matcher = pattern.matcher(query + ",");
 
@@ -238,6 +235,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         QueryDefinition queryDefinition = new QueryDefinition();
         queryDefinition.setDistinct(distinct);
         queryDefinition.setFilters(criteria);
+        queryDefinition.setOperator(params.getOrDefault("operator", "and"));
         return query(queryDefinition, pageable);
     }
 
@@ -303,6 +301,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         builder.distinct(queryDefinition.isDistinct());
         builder.sorts(queryDefinition.getSorts());
         criteria.forEach(builder::filter);
+
+        if ("or".equalsIgnoreCase(queryDefinition.getOperator())) {
+            builder.withOr();
+        }
 
         Specification<Entity> spec = builder.build();
 

@@ -86,7 +86,7 @@ public class City implements Identifier<String> {
 }
 ```
 #### @NamedEntityGraphs
-Também é possível utilizar `@NamedEntityGraphs` para ajustar alguns comportamentos defautl. Para isso, é
+Também é possível utilizar `@NamedEntityGraphs` para ajustar alguns comportamentos default. Para isso, é
 necessário informar o `@NamedEntityGraph` com os seguintes nomes:
 
 *  {Entity}.findById - Altera o comportamento default para busca por id.
@@ -95,7 +95,7 @@ necessário informar o `@NamedEntityGraph` com os seguintes nomes:
 Observações: 
 + Os `@NamedEntityGraph` devem ser declarados da seguite forma: nome da entidade + nome da query. Ex.: `{Entity}.findById`.
 + O `findDetailByid` deve ser definido quando for necessário um carregamento diferente do mapeamento da entidade,
-realizado através da annotation `@Lazy` do Spring. 
+realizado através de `fetch = FetchType.LAZY` do JPA. 
 + Por padrão, será utilizado o `findById` da implementação do `Spring Data`, caso identificado um `@NamedEntityGraph`, 
 ele será selecionado de forma prioritária.
 
@@ -248,7 +248,8 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 
 ## Consultas
 
-Atualmente todas as consultas são realizadas com operador lógico `and`.
+Por padrão, todas as consultas são realizadas com operador lógico `and`, quando possuem mais de um filtro. 
+Contudo, é possível alterar esse comportamento, utilizar o parâmetro `operator`, que suporta o valor `and` e `or`.
 
 ### {path}/ e {path}/find
 
@@ -268,7 +269,7 @@ A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém
 ### {path}/query
 
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
-<a name=“#operadores”><a/>
+<a id=“operadores”><a/>
 
 |Operador   |Descrição           |GET |POST|
 |-----------|--------------------|----|----|
@@ -288,9 +289,10 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
 #### Exemplos:
 ##### Método **GET**
 
-* Listar as cidades com população  maior ou igual a `40000` habitantes, ordenado pelo número de habitantes de forma decrescente
+* Listar as cidades com população  maior ou igual a `40000` habitantes ou rate igual a 5.5,
+ ordenado pelo número de habitantes de forma decrescente
 ```http request
-/query?opt=population>20000&sort=population,desc
+/query?opt=population>=40000,rate=5.5&operator=or&sort=population,desc
 ```
 * Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```http request
@@ -360,6 +362,7 @@ O Layout da consulta, segue a seguinte definição:
 **Query com método POST**
 ```json
 {
+  "operator": "and",
   "filters": [
     {
      "field": "population",
@@ -382,8 +385,9 @@ Obs.:
 * O tipo `Sort`, suporta `direction` com valores ASC e DESC.
 * Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
 atributo filho (**ainda não suportado para o tipo Sort**).
+* O parâmetro `operator`, possui valor default `and` e pode ser omitido.
 
-Listar os estados que possuem cidades com população maior que 50000 habitantes.
+Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
 
 ```json
 {

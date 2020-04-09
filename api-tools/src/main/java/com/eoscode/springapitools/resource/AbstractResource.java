@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"Duplicates", "unchecked"})
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
@@ -152,8 +153,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
 											  @RequestParam(value = "distinct", required = false,
 													  defaultValue = "true") boolean distinct,
-											  @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().query(query, pageable, distinct);
+											  @PageableDefault Pageable pageable,
+											  @RequestParam Map<String, String> params) {
+		Page<Entity> page = getService().query(query, pageable, distinct, params);
 		return ResponseEntity.ok(page);
 	}
 
