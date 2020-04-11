@@ -221,7 +221,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return getRepository().findAll(example, pageable);
     }
 
-    public Page<Entity> query(String query, Pageable pageable, Boolean distinct, Map<String, String> params) {
+    public <T> T query(String query, Pageable pageable, RequestParameter requestParameter) {
         List<FilterDefinition> criteria = new ArrayList<>();
         Pattern pattern = Pattern.compile(
                 "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*|\\w+.?\\w*),",
@@ -233,10 +233,15 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
                     matcher.group(2), matcher.group(3)));
         }
         QueryDefinition queryDefinition = new QueryDefinition();
-        queryDefinition.setDistinct(distinct);
+        queryDefinition.setDistinct(requestParameter.isDistinct());
         queryDefinition.setFilters(criteria);
-        queryDefinition.setOperator(params.getOrDefault("operator", "and"));
-        return query(queryDefinition, pageable);
+        queryDefinition.setOperator(requestParameter.getOperator());
+
+        if (pageable == null) {
+            return (T) query(queryDefinition);
+        } else {
+            return (T) query(queryDefinition, pageable);
+        }
     }
 
     public List<Entity> query(QueryDefinition queryDefinition) {

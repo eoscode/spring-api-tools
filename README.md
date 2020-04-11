@@ -177,29 +177,61 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/{id}</td>
         <td>DELETE</td>
         <td>204</td>
-        <td>Deleta pelo id da entidade.</td>
+        <td>Remove a entidade, utilizando o id.</td>
     </tr>
     <tr>
         <td>{path}/</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza filto nos atributos da entidade. Também pode ser acessodo através de <b>{path}/{id}</b>. Por padrão,
+        <td>Realiza filtro nos atributos da entidade. Também pode ser acessado através de <b>{path}/{find}</b>. Por padrão,
         utiliza valores exatos, ou seja, o operador <b>=</b> (igual).
+        Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para 
+        retornar o tipo <b>Page</b> do Spring.
+        </td>
+    </tr>
+    <tr>
+        <td>{path}/page</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza filtro nos atributos da entidade. Também pode ser acessado através de <b>{path}/find/page</b>. Por padrão,
+        utiliza valores exatos, ou seja, o operador <b>=</b> (igual).
+        Retorna o tipo <b>Page</b> do Spring.
         </td>
     </tr>
    <tr>
         <td>{path}/query</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para retornar o tipo 
+        <b>Page</b> do Spring
+        </td>
+    </tr>
+    <tr>
+        <td>{path}/query/page</td>
+        <td>GET</td>
+        <td>200</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        Retorna o tipo <b>Page</b> do Spring. 
+        </td>
     </tr>
     <tr>
         <td>{path}/query</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>. 
-        Obs.: Utiliza requisição JSON.</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para
+         retornar o tipo <b>Page</b> do Spring. 
+        <br>Obs.: Utiliza requisição JSON.</td>
     </tr>
+    <tr>
+        <td>{path}/query/page</td>
+        <td>POST</td>
+        <td>200</td>
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        Retorna o tipo <b>Page</b> do Spring. 
+        <br>Obs.: Utiliza requisição JSON.</td>
+    </tr>    
     <tr>
         <td>{path}/all</td>
         <td>GET</td>
@@ -211,7 +243,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
 
 #### AbstractResource
 
-Disponibiliza as funcionalidades comuns de um CRUD. Contudo, permite o desenvolvimento de novas funcionaldiades 
+Disponibiliza as funcionalidades comuns de uma API CRUD. Contudo, permite o desenvolvimento de novas funcionalidades, 
 através do `AbstractService`. 
 
 ```java
@@ -249,7 +281,31 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 ## Consultas
 
 Por padrão, todas as consultas são realizadas com operador lógico `and`, quando possuem mais de um filtro. 
-Contudo, é possível alterar esse comportamento, utilizar o parâmetro `operator`, que suporta o valor `and` e `or`.
+Para alterar esse comportamento, utilize o parâmetro `operator`, que suporta o valor `and` e `or`.
+
+As consultas passaram a ser executadas com paginação desabilitada, a partir da versão 1.1.0. Sendo assim, devemos utilizar
+os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` 
+com o parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
+ 
+Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring 
+`application.proporties ou application.yml`:
+
+```yaml
+spring-api-tools:
+  enable-default-pageable: false //valor default
+``` 
+O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas 
+consultas, pode ser utilizado para mudar o comportamento padrão.
+
+Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum 
+comportamento, consulte a documentação do Spring.
+
+```yaml
+spring:
+  data:
+    rest:
+      default-page-size: 10 //valor default do spring
+``` 
 
 ### {path}/ e {path}/find
 

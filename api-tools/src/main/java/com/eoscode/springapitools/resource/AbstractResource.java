@@ -1,6 +1,8 @@
 package com.eoscode.springapitools.resource;
 
+import com.eoscode.springapitools.config.SprintApiToolsProperties;
 import com.eoscode.springapitools.data.domain.Identifier;
+import com.eoscode.springapitools.data.filter.RequestParameter;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
@@ -31,6 +33,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	
 	@Autowired
 	private ApplicationContext applicationContext;
+
+	@Autowired
+	private SprintApiToolsProperties sprintApiToolsProperties;
 
 	private Service service;
 
@@ -142,28 +147,64 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping(value = {"","/find"})
-	public ResponseEntity<Page<Entity>> find(Entity filterBy,
-											 @PageableDefault Pageable pageable) {
+	@GetMapping(value = {"/page","/find/page"})
+	public ResponseEntity<Page<Entity>> findWithPage(Entity filterBy,
+													 @PageableDefault Pageable pageable) {
 		Page<Entity> page = getService().find(filterBy, pageable);
 		return ResponseEntity.ok(page);
 	}
 
+	@GetMapping(value = {"","/find"})
+	public <T> T find(Entity filterBy, @PageableDefault Pageable pageable,
+					  RequestParameter requestParameter) {
+		T result;
+		if (isDefaultPageable(requestParameter.getPageable())) {
+			result = (T) getService().find(filterBy, pageable);
+		} else {
+			result = (T) getService().find(filterBy, pageable.getSort());
+		}
+		return (T) ResponseEntity.ok(result);
+	}
+
+	@GetMapping("/query/page")
+	public ResponseEntity<Page<Entity>> queryWithPage(@RequestParam(value = "opt") String query,
+													  @PageableDefault Pageable pageable,
+													  RequestParameter requestParameter) {
+		Page<Entity> list = getService().query(query, pageable, requestParameter);
+		return ResponseEntity.ok(list);
+	}
+
 	@GetMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
-											  @RequestParam(value = "distinct", required = false,
-													  defaultValue = "true") boolean distinct,
-											  @PageableDefault Pageable pageable,
-											  @RequestParam Map<String, String> params) {
-		Page<Entity> page = getService().query(query, pageable, distinct, params);
-		return ResponseEntity.ok(page);
+	public <T> T query(@RequestParam(value = "opt") String query,
+					   @PageableDefault Pageable pageable,
+					   RequestParameter requestParameter) {
+		T result;
+		if (isDefaultPageable(requestParameter.getPageable())) {
+			result = getService().query(query, pageable, requestParameter);
+		} else {
+			result = getService().query(query, null, requestParameter);
+		}
+		return (T) ResponseEntity.ok(result);
+	}
+
+	@PostMapping("/query/page")
+	public ResponseEntity<Page<Entity>> queryWitPage(@RequestBody QueryDefinition queryDefinition,
+					   @PageableDefault Pageable pageable) {
+		Page<Entity> result = getService().query(queryDefinition, pageable);
+		return ResponseEntity.ok(result);
 	}
 
 	@PostMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestBody QueryDefinition queryDefinition,
+	public <T> T query(@RequestBody QueryDefinition queryDefinition,
+											  @RequestParam(value = "pageable", required = false) Boolean page,
 											  @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().query(queryDefinition, pageable);
-		return ResponseEntity.ok(page);
+		T result;
+		if (isDefaultPageable(page)) {
+			result = (T) getService().query(queryDefinition, pageable);
+		} else {
+			result = (T) getService().query(queryDefinition);
+		}
+		return (T) ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/all")
@@ -176,6 +217,13 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	public ResponseEntity<Page<Entity>> findAllPageAndSort(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
 		Page<Entity> page = getService().findAllPages(pageable);
 		return ResponseEntity.ok(page);
+	}
+
+	private boolean isDefaultPageable(Boolean pageable) {
+		if (pageable != null) {
+			return pageable;
+		}
+		return sprintApiToolsProperties.isEnableDefaultPageable();
 	}
 
 }
