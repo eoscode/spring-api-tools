@@ -284,8 +284,8 @@ Por padrão, todas as consultas são realizadas com operador lógico `and`, quan
 Para alterar esse comportamento, utilize o parâmetro `operator`, que suporta o valor `and` e `or`.
 
 As consultas passaram a ser executadas com paginação desabilitada, a partir da versão 1.1.0. Sendo assim, devemos utilizar
-os novos recursos `{path}/page e {page/query/page}` para realizar consultas paginadas ou utilizar `{path/} e {path/query}` 
-com o parâmetro `pageable com valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
+os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` 
+com o parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
  
 Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring 
 `application.proporties ou application.yml`:
