@@ -281,7 +281,7 @@ public class CityResource extends AbstractRepositoryResource<CityRepository, Cit
 ## Consultas
 
 Por padrão, todas as consultas são realizadas com operador lógico `and`, quando possuem mais de um filtro. 
-Contudo, é possível alterar esse comportamento, utilizar o parâmetro `operator`, que suporta o valor `and` e `or`.
+Para alterar esse comportamento, utilize o parâmetro `operator`, que suporta o valor `and` e `or`.
 
 As consultas passaram a ser executadas com paginação desabilitada, a partir da versão 1.1.0. Sendo assim, devemos utilizar
 os novos recursos `{path}/page e {page/query/page}` para realizar consultas paginadas ou utilizar `{path/} e {path/query}` 
