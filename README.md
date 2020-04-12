@@ -202,7 +202,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
         Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para retornar o tipo 
         <b>Page</b> do Spring
         </td>
@@ -211,7 +211,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query/page</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
         Retorna o tipo <b>Page</b> do Spring. 
         </td>
     </tr>
@@ -219,7 +219,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
         Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para
          retornar o tipo <b>Page</b> do Spring. 
         <br>Obs.: Utiliza requisição JSON.</td>
@@ -228,7 +228,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query/page</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
         Retorna o tipo <b>Page</b> do Spring. 
         <br>Obs.: Utiliza requisição JSON.</td>
     </tr>    
@@ -325,25 +325,131 @@ A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém
 ### {path}/query
 
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
-<a id=“operadores”><a/>
+<a name=“operadores”><a/>
 
-|Operador   |Descrição           |GET |POST|
-|-----------|--------------------|----|----|
-|\>         | maior que          |[x] |[x] |
-|>=         | maior ou igual que |[x] |[x] |
-|<          | menor que          |[x] |[x] |
-|<=         | menor ou igual que |[x] |[x] |
-|=          | igual a            |[x] |[x] |
-|!=         | diferente de       |[x] |[x] |
-|$like      | contém o valor     |[x] |[x] |
-|$notLike   | não contém o valor |[x] |[x] |
-|$isNull    | valor é NULL       |[x] |[x] |
-|$isNotNull | valor não é NULL   |[x] |[x] |
-|$btw       | entre valores      |[ ] |[x] |
-|$in        | algum dos valores  |[ ] |[x] |
+<table>
+    <tr>
+        <th>Operador</th>
+        <th>Descrição</th>
+        <th>GET</th>
+        <th>POS</th>
+    </tr>
+    <tr>
+        <td>>/td>
+        <td>Maior que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>>=/td>
+        <td>Maior ou igual que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td><</td>
+        <td>Menor que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td><=</td>
+        <td>Menor ou igual que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>=</td>
+        <td>Igual a</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>!=</td>
+        <td>Diferente de</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$like</td>
+        <td>Contém o valor</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$notLike</td>
+        <td>Não contém o valor</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$isNull</td>
+        <td>Valor é NULL</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$isNotNull</td>
+        <td>Valor não é NULL</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$btw</td>
+        <td>Entre valores
+        Sintaxe: "10;50" (deve ser informado como <b>String</b>)</td>
+        <td>[ ]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$in</td>
+        <td>Algum dos valores
+        Sintaxe: "2;4;5;6" (deve ser informado como <b>String</b>)</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$size</td>
+        <td>Verifica o número de ocorrências na coleção, com suporte aos operadores: >, >=, <, <=, =, !=
+        Sintaxe: <b>operador</b>;<b>valor</b>. Ex.: ">=;2" (deve ser informado como <b>String</b>).
+        Obs.: Aplicado a atributos do tipo coleção. 
+        </td>
+        <td>[ ]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$isEmpty</td>
+        <td>Verifica se a coleção está vazia
+        Obs.: Aplicado a atributos do tipo coleção.
+        </td>
+         <td>[x]</td>
+         <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$isNotEmpty</td>
+        <td>Verifica se a coleção não está vazia
+        Obs.: Aplicado a atributos do tipo coleção.
+        </td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>            
+</table>
 
 #### Exemplos:
 ##### Método **GET**
+
+Para consultas com método `GET`, devemos utilizar a sintaxe `atributo` + `operador` + `valor`, separado por `,` quando 
+mais de um filtro. Os filtros são informados através do parâmetro `opt`.
+
+Os filtros que utilizam operadores que não suportam valor, tais como: `$isNull`, `$isNotNull`, `$isEmpty`, `$isNotEmpty`, 
+devem omitir o valor. Ex.: `name$isNotNull`. 
+
+A partir da versão 1.1.0, podemos utilizar o parâmetro `filters` com sintaxe `multiple values` para informar múltiplos 
+filtros. Ex.:
+
+```http request
+/query?filters=population>=40000&filters=rate=5.5&operator=or&sort=population,desc
+```
 
 * Listar as cidades com população  maior ou igual a `40000` habitantes ou rate igual a 5.5,
  ordenado pelo número de habitantes de forma decrescente
@@ -352,7 +458,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
 ```
 * Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```http request
-/api/cities/query?opt=stateId=52e0a6a7-d72d-4b0f-bab9-aebfcf888e21&population>20000
+/api/cities/query?opt=stateId=52e0a6a7-d72d-4b0f-bab9-aebfcf888e21,population>20000
 ```  
 * Listar as cidades com população entre `40000` e `550000` habitantes
 ```http request
@@ -369,7 +475,29 @@ Obs.:
 
 ##### Método **POST**
 
-* Listar cidades com população  maior ou igual a `40000` habitantes
+O Layout da consulta, segue a seguinte definição: 
+
+```json
+{
+  "operator": "and",
+  "filters": [
+    {
+     "field": "population",
+     "operator": ">=",
+     "value": 50000
+    }
+  ],
+  "sorts": [
+    {
+     "field": "population",
+     "direction": "ASC"
+    }	
+  ],
+  "distinct": true
+}
+```
+
+* Listar as cidades com população  maior ou igual a `40000` habitantes
 ```json
 {
   "filters": [
@@ -413,36 +541,6 @@ Obs.:
 }
 ```
 
-O Layout da consulta, segue a seguinte definição: 
-
-**Query com método POST**
-```json
-{
-  "operator": "and",
-  "filters": [
-    {
-     "field": "population",
-     "operator": ">=",
-     "value": 50000
-    }
-  ],
-  "sorts": [
-    {
-     "field": "population",
-     "direction": "ASC"
-    }	
-  ],
-  "distinct": true
-}
-```
-
-Obs.:
-* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
-* O tipo `Sort`, suporta `direction` com valores ASC e DESC.
-* Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
-atributo filho (**ainda não suportado para o tipo Sort**).
-* O parâmetro `operator`, possui valor default `and` e pode ser omitido.
-
 Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
 
 ```json
@@ -457,3 +555,12 @@ Listar os estados que possuem cidades com população maior ou igual a 50000 hab
   "distinct": true
 }
 ```
+
+Obs.:
+* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
+* O tipo `Sort`, suporta `direction` com valores ASC e DESC.
+* Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
+atributo filho (**ainda não suportado para o tipo Sort**).
+* O parâmetro `operator`, possui valor default `and` e pode ser omitido.
+* O parâmetro `value` do tipo `Filter`, suporta múltiplos tipos. Sendo assim, deve ser informado com sintaxe equivalente 
+ao tipo definido na entidade. 

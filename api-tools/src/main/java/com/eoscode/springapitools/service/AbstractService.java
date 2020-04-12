@@ -223,15 +223,30 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     public <T> T query(String query, Pageable pageable, RequestParameter requestParameter) {
         List<FilterDefinition> criteria = new ArrayList<>();
-        Pattern pattern = Pattern.compile(
-                "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*|\\w+.?\\w*),",
-                Pattern.UNICODE_CHARACTER_CLASS);
-        Matcher matcher = pattern.matcher(query + ",");
 
-        while (matcher.find()) {
-            criteria.add(new FilterDefinition(matcher.group(1),
-                    matcher.group(2), matcher.group(3)));
+        List<String> filters = new ArrayList<>();
+        if (query != null && !query.isEmpty()) {
+            filters.addAll(Arrays.asList(query.split(",")));
         }
+        if (requestParameter.getFilters() != null) {
+            filters.addAll(Arrays.asList(requestParameter.getFilters()));
+        }
+
+        Pattern pattern = Pattern.compile(
+                "(\\w.*[^><!=])" +
+                        "(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull|\\$startsWith" +
+                        "|\\$endsWith|\\$isEmpty|\\$isNotEmpty|\\$btw|\\$in)" +
+                        "(\\w.*|(>=|<=|=|!=|>|<)?+;\\d)?",
+                Pattern.UNICODE_CHARACTER_CLASS);
+
+        for (String filter : filters) {
+            Matcher matcher = pattern.matcher(filter);
+            while (matcher.find()) {
+                criteria.add(new FilterDefinition(matcher.group(1),
+                        matcher.group(2), matcher.group(3)));
+            }
+        }
+
         QueryDefinition queryDefinition = new QueryDefinition();
         queryDefinition.setDistinct(requestParameter.isDistinct());
         queryDefinition.setFilters(criteria);
