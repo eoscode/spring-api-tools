@@ -394,7 +394,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
         <td>$btw</td>
         <td>Entre valores
         Sintaxe: "10;50" (deve ser informado como <b>String</b>)</td>
-        <td>[ ]</td>
+        <td>[x]</td>
         <td>[x]</td>
     </tr>    
     <tr>
