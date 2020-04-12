@@ -294,7 +294,8 @@ spring-api-tools:
 O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas consultas, 
 pode ser utilizado para mudar o comportamento padrão.
 
-Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum comportamento, consulte a documentação do Spring.
+Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum comportamento, 
+consulte a documentação do Spring.
 
 ```yaml
 spring:
@@ -305,16 +306,15 @@ spring:
 
 ### {path}/ e {path}/find
 
-Funcionalidade disponível em `AbstractResouce` e `AbstractRepositoryResource`, que possibilita aplicar filtros nos 
-atributos da entidade.
+As funcionalidades disponíveis em `AbstractResouce` e `AbstractRepositoryResource`, possibilitam aplicar filtros nos atributos da entidade.
 
 Por padrão, todos os atributos são suportados (tipos primitivos e objetos). Contudo, os tipos primitivos são configurados
 para ignorar o valor default. 
 Ex.: Para atributo do tipo **int** e **long**, o valor zero é ignorado, para **boolean** o valor false.
 
-Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por default, informa que
-os valores default para tipo primitivo, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que 
-devem ser exceção ao tratamento default `supportedDefaultValueForAttributes`.
+Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por padrão, informa que
+os valores default, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que devem ser exceção ao tratamento
+default `supportedDefaultValueForAttributes`.
 
 A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém, aplicado aos atributos.   
 
@@ -408,7 +408,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
         <td>$size</td>
         <td>Verifica o número de ocorrências na coleção, com suporte aos operadores: <b>>, >=, <, <=, =, !=</b>.
         Sintaxe: <b>operador</b>;<b>valor</b>. Ex.: ">=;2" (deve ser informado como <b>String</b>).
-        Obs.: Aplicado a atributos do tipo coleção. 
+        <br>Obs.: Aplicado a atributos do tipo coleção. 
         </td>
         <td>[ ]</td>
         <td>[x]</td>
@@ -416,7 +416,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
     <tr>
         <td>$isEmpty</td>
         <td>Verifica se a coleção está vazia
-        Obs.: Aplicado a atributos do tipo coleção.
+        <br>Obs.: Aplicado a atributos do tipo coleção.
         </td>
          <td>[x]</td>
          <td>[x]</td>
@@ -424,7 +424,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
     <tr>
         <td>$isNotEmpty</td>
         <td>Verifica se a coleção não está vazia
-        Obs.: Aplicado a atributos do tipo coleção.
+        <br>Obs.: Aplicado a atributos do tipo coleção.
         </td>
         <td>[x]</td>
         <td>[x]</td>
@@ -440,7 +440,7 @@ mais de um filtro. Os filtros são informados através do parâmetro `opt`.
 Os filtros que utilizam operadores que não suportam valor, tais como: `$isNull`, `$isNotNull`, `$isEmpty`, `$isNotEmpty`, 
 devem omitir o valor. Ex.: `name$isNotNull`. 
 
-A partir da versão 1.1.0, podemos utilizar o parâmetro `filters` com sintaxe `multiple values` para informar múltiplos 
+A partir da versão **1.1.0**, podemos utilizar o parâmetro `filters` com sintaxe `multiple values` para informar múltiplos 
 filtros.
 
 ```http request
