@@ -101,8 +101,7 @@ ele será selecionado de forma prioritária.
 
 ### Repository
 
-A classe `Repository`, deve especializar a implementação do framework 
-`com.eoscode.springapitools.data.repository.Repository`.
+A classe `Repository`, deve especializar a implementação do framework `com.eoscode.springapitools.data.repository.Repository`.
 
 ```java
 package com.eoscode.springapitools.sample.repository;
@@ -117,8 +116,7 @@ public interface CityRepository extends Repository<City, String> {}
 
 ### Service
 
-A classe `Service`, deve especializar `AbstractService`, que implementa as rotinas para `save, update, delete,
-find, findById, query e etc`.
+A classe `Service`, deve especializar `AbstractService`, que implementa as rotinas para `save, update, delete, find, findById, query e etc`.
 
 ```java
 package com.eoscode.springapitools.sample.service;
@@ -202,7 +200,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
         Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para retornar o tipo 
         <b>Page</b> do Spring
         </td>
@@ -211,7 +209,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query/page</td>
         <td>GET</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
         Retorna o tipo <b>Page</b> do Spring. 
         </td>
     </tr>
@@ -219,7 +217,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
         Retorna uma lista da entidade consulta. Contudo, podemos usar o parâmetro <b>pageable</b> com valor true para
          retornar o tipo <b>Page</b> do Spring. 
         <br>Obs.: Utiliza requisição JSON.</td>
@@ -228,7 +226,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
         <td>{path}/query/page</td>
         <td>POST</td>
         <td>200</td>
-        <td>Realiza query nos atributos da entidade, com suporte a múltiplos operadores.
+        <td>Realiza query nos atributos da entidade, com suporte a múltiplos <a href="#operadores">operadores</a>.
         Retorna o tipo <b>Page</b> do Spring. 
         <br>Obs.: Utiliza requisição JSON.</td>
     </tr>    
@@ -284,21 +282,19 @@ Por padrão, todas as consultas são realizadas com operador lógico `and`, quan
 Para alterar esse comportamento, utilize o parâmetro `operator`, que suporta o valor `and` e `or`.
 
 As consultas passaram a ser executadas com paginação desabilitada, a partir da versão 1.1.0. Sendo assim, devemos utilizar
-os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` 
-com o parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
+os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` com o 
+parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
  
-Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring 
-`application.proporties ou application.yml`:
+Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring `application.proporties ou application.yml`:
 
 ```yaml
 spring-api-tools:
   enable-default-pageable: false //valor default
 ``` 
-O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas 
-consultas, pode ser utilizado para mudar o comportamento padrão.
+O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas consultas, 
+pode ser utilizado para mudar o comportamento padrão.
 
-Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum 
-comportamento, consulte a documentação do Spring.
+Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum comportamento, consulte a documentação do Spring.
 
 ```yaml
 spring:
@@ -325,8 +321,8 @@ A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém
 ### {path}/query
 
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
-<a name=“operadores”><a/>
 
+#### Operadores
 <table>
     <tr>
         <th>Operador</th>
@@ -410,7 +406,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
     </tr>
     <tr>
         <td>$size</td>
-        <td>Verifica o número de ocorrências na coleção, com suporte aos operadores: >, >=, <, <=, =, !=
+        <td>Verifica o número de ocorrências na coleção, com suporte aos operadores: <b>>, >=, <, <=, =, !=</b>.
         Sintaxe: <b>operador</b>;<b>valor</b>. Ex.: ">=;2" (deve ser informado como <b>String</b>).
         Obs.: Aplicado a atributos do tipo coleção. 
         </td>
@@ -445,11 +441,13 @@ Os filtros que utilizam operadores que não suportam valor, tais como: `$isNull`
 devem omitir o valor. Ex.: `name$isNotNull`. 
 
 A partir da versão 1.1.0, podemos utilizar o parâmetro `filters` com sintaxe `multiple values` para informar múltiplos 
-filtros. Ex.:
+filtros.
 
 ```http request
 /query?filters=population>=40000&filters=rate=5.5&operator=or&sort=population,desc
 ```
+
+Exemplos:
 
 * Listar as cidades com população  maior ou igual a `40000` habitantes ou rate igual a 5.5,
  ordenado pelo número de habitantes de forma decrescente
@@ -496,6 +494,8 @@ O Layout da consulta, segue a seguinte definição:
   "distinct": true
 }
 ```
+
+Exemplos:
 
 * Listar as cidades com população  maior ou igual a `40000` habitantes
 ```json
