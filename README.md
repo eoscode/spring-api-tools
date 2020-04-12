@@ -101,8 +101,7 @@ ele será selecionado de forma prioritária.
 
 ### Repository
 
-A classe `Repository`, deve especializar a implementação do framework 
-`com.eoscode.springapitools.data.repository.Repository`.
+A classe `Repository`, deve especializar a implementação do framework `com.eoscode.springapitools.data.repository.Repository`.
 
 ```java
 package com.eoscode.springapitools.sample.repository;
@@ -117,8 +116,7 @@ public interface CityRepository extends Repository<City, String> {}
 
 ### Service
 
-A classe `Service`, deve especializar `AbstractService`, que implementa as rotinas para `save, update, delete,
-find, findById, query e etc`.
+A classe `Service`, deve especializar `AbstractService`, que implementa as rotinas para `save, update, delete, find, findById, query e etc`.
 
 ```java
 package com.eoscode.springapitools.sample.service;
@@ -284,21 +282,20 @@ Por padrão, todas as consultas são realizadas com operador lógico `and`, quan
 Para alterar esse comportamento, utilize o parâmetro `operator`, que suporta o valor `and` e `or`.
 
 As consultas passaram a ser executadas com paginação desabilitada, a partir da versão 1.1.0. Sendo assim, devemos utilizar
-os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` 
-com o parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
+os novos recursos `{path}/page e {path}/query/page` para realizar consultas paginadas ou utilizar `{path}/ e {path}/query` com o 
+parâmetro `pageable informando valor true`, para indicar que a consulta deve retornar o tipo Page do Spring.
  
-Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring 
-`application.proporties ou application.yml`:
+Outra forma de configurar o comportamento da paginação, é através do arquivo de configuração do Spring `application.proporties ou application.yml`:
 
 ```yaml
 spring-api-tools:
   enable-default-pageable: false //valor default
 ``` 
-O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas 
-consultas, pode ser utilizado para mudar o comportamento padrão.
+O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas consultas, 
+pode ser utilizado para mudar o comportamento padrão.
 
-Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum 
-comportamento, consulte a documentação do Spring.
+Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum comportamento, 
+consulte a documentação do Spring.
 
 ```yaml
 spring:
@@ -309,41 +306,148 @@ spring:
 
 ### {path}/ e {path}/find
 
-Funcionalidade disponível em `AbstractResouce` e `AbstractRepositoryResource`, que possibilita aplicar filtros nos 
-atributos da entidade.
+As funcionalidades disponíveis em `AbstractResouce` e `AbstractRepositoryResource`, possibilitam aplicar filtros nos atributos da entidade.
 
 Por padrão, todos os atributos são suportados (tipos primitivos e objetos). Contudo, os tipos primitivos são configurados
 para ignorar o valor default. 
 Ex.: Para atributo do tipo **int** e **long**, o valor zero é ignorado, para **boolean** o valor false.
 
-Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por default, informa que
-os valores default para tipo primitivo, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que 
-devem ser exceção ao tratamento default `supportedDefaultValueForAttributes`.
+Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por padrão, informa que
+os valores default, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que devem ser exceção ao tratamento
+default `supportedDefaultValueForAttributes`.
 
 A annotation `FindAttribute`, possui um comportamento similiar ao `Find`, porém, aplicado aos atributos.   
 
 ### {path}/query
 
 Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um conjunto maior de operadores.
-<a id=“operadores”><a/>
 
-|Operador   |Descrição           |GET |POST|
-|-----------|--------------------|----|----|
-|\>         | maior que          |[x] |[x] |
-|>=         | maior ou igual que |[x] |[x] |
-|<          | menor que          |[x] |[x] |
-|<=         | menor ou igual que |[x] |[x] |
-|=          | igual a            |[x] |[x] |
-|!=         | diferente de       |[x] |[x] |
-|$like      | contém o valor     |[x] |[x] |
-|$notLike   | não contém o valor |[x] |[x] |
-|$isNull    | valor é NULL       |[x] |[x] |
-|$isNotNull | valor não é NULL   |[x] |[x] |
-|$btw       | entre valores      |[ ] |[x] |
-|$in        | algum dos valores  |[ ] |[x] |
+#### Operadores
+<table>
+    <tr>
+        <th>Operador</th>
+        <th>Descrição</th>
+        <th>GET</th>
+        <th>POS</th>
+    </tr>
+    <tr>
+        <td>>/td>
+        <td>Maior que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>>=/td>
+        <td>Maior ou igual que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td><</td>
+        <td>Menor que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td><=</td>
+        <td>Menor ou igual que</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>=</td>
+        <td>Igual a</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>!=</td>
+        <td>Diferente de</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$like</td>
+        <td>Contém o valor</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$notLike</td>
+        <td>Não contém o valor</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$isNull</td>
+        <td>Valor é NULL</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$isNotNull</td>
+        <td>Valor não é NULL</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$btw</td>
+        <td>Entre valores
+        Sintaxe: "10;50" (deve ser informado como <b>String</b>)</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>    
+    <tr>
+        <td>$in</td>
+        <td>Algum dos valores
+        Sintaxe: "2;4;5;6" (deve ser informado como <b>String</b>)</td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$size</td>
+        <td>Verifica o número de ocorrências na coleção, com suporte aos operadores: <b>>, >=, <, <=, =, !=</b>.
+        Sintaxe: <b>operador</b>;<b>valor</b>. Ex.: ">=;2" (deve ser informado como <b>String</b>).
+        <br>Obs.: Aplicado a atributos do tipo coleção. 
+        </td>
+        <td>[ ]</td>
+        <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$isEmpty</td>
+        <td>Verifica se a coleção está vazia
+        <br>Obs.: Aplicado a atributos do tipo coleção.
+        </td>
+         <td>[x]</td>
+         <td>[x]</td>
+    </tr>
+    <tr>
+        <td>$isNotEmpty</td>
+        <td>Verifica se a coleção não está vazia
+        <br>Obs.: Aplicado a atributos do tipo coleção.
+        </td>
+        <td>[x]</td>
+        <td>[x]</td>
+    </tr>            
+</table>
 
 #### Exemplos:
 ##### Método **GET**
+
+Para consultas com método `GET`, devemos utilizar a sintaxe `atributo` + `operador` + `valor`, separado por `,` quando 
+mais de um filtro. Os filtros são informados através do parâmetro `opt`.
+
+Os filtros que utilizam operadores que não suportam valor, tais como: `$isNull`, `$isNotNull`, `$isEmpty`, `$isNotEmpty`, 
+devem omitir o valor. Ex.: `name$isNotNull`. 
+
+A partir da versão **1.1.0**, podemos utilizar o parâmetro `filters` com sintaxe `multiple values` para informar múltiplos 
+filtros.
+
+```http request
+/query?filters=population>=40000&filters=rate=5.5&operator=or&sort=population,desc
+```
+
+Exemplos:
 
 * Listar as cidades com população  maior ou igual a `40000` habitantes ou rate igual a 5.5,
  ordenado pelo número de habitantes de forma decrescente
@@ -352,7 +456,7 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
 ```
 * Listar as cidades com stateId igual a `52e0a6a7-d72d-4b0f-bab9-aebfcf888e21` e população maior que `20000` habitantes
 ```http request
-/api/cities/query?opt=stateId=52e0a6a7-d72d-4b0f-bab9-aebfcf888e21&population>20000
+/api/cities/query?opt=stateId=52e0a6a7-d72d-4b0f-bab9-aebfcf888e21,population>20000
 ```  
 * Listar as cidades com população entre `40000` e `550000` habitantes
 ```http request
@@ -369,7 +473,31 @@ Obs.:
 
 ##### Método **POST**
 
-* Listar cidades com população  maior ou igual a `40000` habitantes
+O Layout da consulta, segue a seguinte definição: 
+
+```json
+{
+  "operator": "and",
+  "filters": [
+    {
+     "field": "population",
+     "operator": ">=",
+     "value": 50000
+    }
+  ],
+  "sorts": [
+    {
+     "field": "population",
+     "direction": "ASC"
+    }	
+  ],
+  "distinct": true
+}
+```
+
+Exemplos:
+
+* Listar as cidades com população  maior ou igual a `40000` habitantes
 ```json
 {
   "filters": [
@@ -413,36 +541,6 @@ Obs.:
 }
 ```
 
-O Layout da consulta, segue a seguinte definição: 
-
-**Query com método POST**
-```json
-{
-  "operator": "and",
-  "filters": [
-    {
-     "field": "population",
-     "operator": ">=",
-     "value": 50000
-    }
-  ],
-  "sorts": [
-    {
-     "field": "population",
-     "direction": "ASC"
-    }	
-  ],
-  "distinct": true
-}
-```
-
-Obs.:
-* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
-* O tipo `Sort`, suporta `direction` com valores ASC e DESC.
-* Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
-atributo filho (**ainda não suportado para o tipo Sort**).
-* O parâmetro `operator`, possui valor default `and` e pode ser omitido.
-
 Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
 
 ```json
@@ -457,3 +555,12 @@ Listar os estados que possuem cidades com população maior ou igual a 50000 hab
   "distinct": true
 }
 ```
+
+Obs.:
+* O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
+* O tipo `Sort`, suporta `direction` com valores ASC e DESC.
+* Todas as configurações de consulta, são realizadas com base no nome do atributo. Também é suportado consultas no
+atributo filho (**ainda não suportado para o tipo Sort**).
+* O parâmetro `operator`, possui valor default `and` e pode ser omitido.
+* O parâmetro `value` do tipo `Filter`, suporta múltiplos tipos. Sendo assim, deve ser informado com sintaxe equivalente 
+ao tipo definido na entidade. 

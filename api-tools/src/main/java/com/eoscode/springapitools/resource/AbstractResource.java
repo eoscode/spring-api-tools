@@ -175,7 +175,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@GetMapping("/query")
-	public <T> T query(@RequestParam(value = "opt") String query,
+	public <T> T query(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
 					   @PageableDefault Pageable pageable,
 					   RequestParameter requestParameter) {
 		T result;
