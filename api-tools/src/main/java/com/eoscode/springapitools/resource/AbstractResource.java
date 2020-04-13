@@ -2,7 +2,7 @@ package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.config.SprintApiToolsProperties;
 import com.eoscode.springapitools.data.domain.Identifier;
-import com.eoscode.springapitools.data.filter.RequestParameter;
+import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -24,7 +25,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings({"Duplicates", "unchecked"})
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
@@ -156,12 +156,23 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping(value = {"","/find"})
 	public <T> T find(Entity filterBy, @PageableDefault Pageable pageable,
-					  RequestParameter requestParameter) {
+					  QueryParameter queryParameter) {
 		T result;
-		if (isDefaultPageable(requestParameter.getPageable())) {
+		if (isDefaultPageable(queryParameter.getPageable())) {
 			result = (T) getService().find(filterBy, pageable);
 		} else {
-			result = (T) getService().find(filterBy, pageable.getSort());
+			int maxSize = getListDefaultSize(queryParameter.getSize());
+			if (maxSize > 0) {
+				Page<Entity> page = getService().find(filterBy, PageRequest.of(0, maxSize, pageable.getSort()));
+				result = (T) page.getContent();
+				if (page.getTotalElements() > maxSize) {
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+				}
+			} else {
+				result = (T) getService().find(filterBy, pageable.getSort());
+			}
 		}
 		return (T) ResponseEntity.ok(result);
 	}
@@ -169,20 +180,31 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping("/query/page")
 	public ResponseEntity<Page<Entity>> queryWithPage(@RequestParam(value = "opt") String query,
 													  @PageableDefault Pageable pageable,
-													  RequestParameter requestParameter) {
-		Page<Entity> list = getService().query(query, pageable, requestParameter);
+													  QueryParameter queryParameter) {
+		Page<Entity> list = getService().query(query, pageable, queryParameter);
 		return ResponseEntity.ok(list);
 	}
 
 	@GetMapping("/query")
 	public <T> T query(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
 					   @PageableDefault Pageable pageable,
-					   RequestParameter requestParameter) {
+					   QueryParameter queryParameter) {
 		T result;
-		if (isDefaultPageable(requestParameter.getPageable())) {
-			result = getService().query(query, pageable, requestParameter);
+		if (isDefaultPageable(queryParameter.getPageable())) {
+			result = getService().query(query, pageable, queryParameter);
 		} else {
-			result = getService().query(query, null, requestParameter);
+			int maxSize = getListDefaultSize(queryParameter.getSize());
+			if (maxSize > 0) {
+				Page<Entity> page = getService().query(query, PageRequest.of(0, maxSize), queryParameter);
+				result = (T) page.getContent();
+				if (page.getTotalElements() > maxSize) {
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+				}
+			} else {
+				result = getService().query(query, null, queryParameter);
+			}
 		}
 		return (T) ResponseEntity.ok(result);
 	}
@@ -224,6 +246,13 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			return pageable;
 		}
 		return sprintApiToolsProperties.isEnableDefaultPageable();
+	}
+
+	private int getListDefaultSize(Integer size) {
+		if (size != null && sprintApiToolsProperties.isListDefaultSizeOverride()) {
+			return size;
+		}
+		return sprintApiToolsProperties.getListDefaultSize();
 	}
 
 }

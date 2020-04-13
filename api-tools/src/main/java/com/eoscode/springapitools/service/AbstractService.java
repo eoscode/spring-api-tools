@@ -19,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -42,6 +43,8 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    private EntityManager entityManager;
 
     private Repository repository;
 
@@ -221,15 +224,15 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return getRepository().findAll(example, pageable);
     }
 
-    public <T> T query(String query, Pageable pageable, RequestParameter requestParameter) {
+    public <T> T query(String query, Pageable pageable, QueryParameter queryParameter) {
         List<FilterDefinition> criteria = new ArrayList<>();
 
         List<String> filters = new ArrayList<>();
         if (query != null && !query.isEmpty()) {
             filters.addAll(Arrays.asList(query.split(",")));
         }
-        if (requestParameter.getFilters() != null) {
-            filters.addAll(Arrays.asList(requestParameter.getFilters()));
+        if (queryParameter.getFilters() != null) {
+            filters.addAll(Arrays.asList(queryParameter.getFilters()));
         }
 
         Pattern pattern = Pattern.compile(
@@ -248,9 +251,9 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         }
 
         QueryDefinition queryDefinition = new QueryDefinition();
-        queryDefinition.setDistinct(requestParameter.isDistinct());
+        queryDefinition.setDistinct(queryParameter.isDistinct());
         queryDefinition.setFilters(criteria);
-        queryDefinition.setOperator(requestParameter.getOperator());
+        queryDefinition.setOperator(queryParameter.getOperator());
 
         if (pageable == null) {
             return (T) query(queryDefinition);

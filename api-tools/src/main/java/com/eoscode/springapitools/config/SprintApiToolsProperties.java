@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class SprintApiToolsProperties {
 
     private boolean enableDefaultPageable = false;
+    private int listDefaultSize = 0;
+    private boolean listDefaultSizeOverride = true;
 
     public SprintApiToolsProperties() {}
 
@@ -19,4 +21,20 @@ public class SprintApiToolsProperties {
         this.enableDefaultPageable = enableDefaultPageable;
     }
 
+    public int getListDefaultSize() {
+        return listDefaultSize;
+    }
+
+    public void setListDefaultSize(int listDefaultSize) {
+        this.listDefaultSize = listDefaultSize;
+    }
+
+    public boolean isListDefaultSizeOverride() {
+        return listDefaultSizeOverride;
+    }
+
+    public void setListDefaultSizeOverride(boolean listDefaultSizeOverride) {
+        this.listDefaultSizeOverride = listDefaultSizeOverride;
+    }
+    
 }
