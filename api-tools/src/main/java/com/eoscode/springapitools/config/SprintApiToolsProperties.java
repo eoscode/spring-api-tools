@@ -9,6 +9,7 @@ public class SprintApiToolsProperties {
 
     private boolean enableDefaultPageable = false;
     private int listDefaultSize = 0;
+    private boolean listDefaultSizeOverride = true;
 
     public SprintApiToolsProperties() {}
 
@@ -28,4 +29,12 @@ public class SprintApiToolsProperties {
         this.listDefaultSize = listDefaultSize;
     }
 
+    public boolean isListDefaultSizeOverride() {
+        return listDefaultSizeOverride;
+    }
+
+    public void setListDefaultSizeOverride(boolean listDefaultSizeOverride) {
+        this.listDefaultSizeOverride = listDefaultSizeOverride;
+    }
+    
 }

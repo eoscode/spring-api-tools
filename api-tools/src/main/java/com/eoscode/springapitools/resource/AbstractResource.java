@@ -166,8 +166,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				Page<Entity> page = getService().find(filterBy, PageRequest.of(0, maxSize, pageable.getSort()));
 				result = (T) page.getContent();
 				if (page.getTotalElements() > maxSize) {
-					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size",
-							maxSize, page.getTotalElements()));
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
 				}
 			} else {
 				result = (T) getService().find(filterBy, pageable.getSort());
@@ -197,8 +198,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				Page<Entity> page = getService().query(query, PageRequest.of(0, maxSize), queryParameter);
 				result = (T) page.getContent();
 				if (page.getTotalElements() > maxSize) {
-					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size",
-							maxSize, page.getTotalElements()));
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
 				}
 			} else {
 				result = getService().query(query, null, queryParameter);
@@ -247,7 +249,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	private int getListDefaultSize(Integer size) {
-		if (size != null) {
+		if (size != null && sprintApiToolsProperties.isListDefaultSizeOverride()) {
 			return size;
 		}
 		return sprintApiToolsProperties.getListDefaultSize();
