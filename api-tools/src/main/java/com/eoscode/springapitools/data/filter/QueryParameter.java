@@ -1,13 +1,14 @@
 package com.eoscode.springapitools.data.filter;
 
-public class RequestParameter {
+public class QueryParameter {
 
     private boolean distinct = true;
     private String operator = "and";
     private Boolean pageable = null;
     private String[] filters = null;
+    private Integer size = null;
 
-    public RequestParameter() {}
+    public QueryParameter() {}
 
     public boolean isDistinct() {
         return distinct;
@@ -39,5 +40,13 @@ public class RequestParameter {
 
     public void setFilters(String[] filters) {
         this.filters = filters;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer size) {
+        this.size = size;
     }
 }
