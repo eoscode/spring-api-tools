@@ -294,14 +294,25 @@ spring-api-tools:
 O valor `true`, irá indicar que toda consulta deve retornar o tipo `Page` do Spring. O parâmetro `pageable`, enviado nas consultas, 
 pode ser utilizado para mudar o comportamento padrão.
 
-Obs.: A paginação e ordenação, utilizam as configurações padrões do Spring. Sendo assim, caso queira mudar algum comportamento, 
-consulte a documentação do Spring.
+Obs.: A paginação e ordenação, utilizam as configurações padrões e sintaxe do Spring. Sendo assim, devemos consultar a documentação do 
+framework, se necessário alterar algum comportamento padrão.
 
 ```yaml
 spring:
   data:
     rest:
       default-page-size: 10 //valor default do spring
+``` 
+
+As consultas realizadas sem paginação, suportam o parâmetro `size` para impor um limite na quantidade de registros retornados.
+Essa configuração pode ser realizada por consulta ou de forma global, no `application.yml` do Spring.
+
+Também é possível desabilitar o override do `size` nas consultas, e forçar o uso da configuração global.
+
+```yaml
+spring-api-tools:
+  list-default-size-override: true //permite alterar o valor do size nas consultas
+  list-default-size: 0 //valor limite desabilitado. Se diferente de zero, ira impor o limite
 ``` 
 
 ### {path}/ e {path}/find
@@ -434,8 +445,8 @@ Diferente do `/find`, o suporte a `/query`, permite realizar consultas com um co
 #### Exemplos:
 ##### Método **GET**
 
-Para consultas com método `GET`, devemos utilizar a sintaxe `atributo` + `operador` + `valor`, separado por `,` quando 
-mais de um filtro. Os filtros são informados através do parâmetro `opt`.
+Para consultas com método `GET`, devemos utilizar a sintaxe `atributo` + `operador` + `valor`. Quando mais de um filtro for 
+aplicado a consulta, devemos utilizar o separador `,` para indicar o limite de cada filtro. Os filtros são informados através do parâmetro `opt`.
 
 Os filtros que utilizam operadores que não suportam valor, tais como: `$isNull`, `$isNotNull`, `$isEmpty`, `$isNotEmpty`, 
 devem omitir o valor. Ex.: `name$isNotNull`. 
