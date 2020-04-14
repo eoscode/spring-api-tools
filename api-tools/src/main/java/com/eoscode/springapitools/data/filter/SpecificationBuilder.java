@@ -2,9 +2,7 @@ package com.eoscode.springapitools.data.filter;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +122,6 @@ public class SpecificationBuilder<T> {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     Specification<T> where(List<FilterDefinition> filters) {
         return (root, query, builder) -> {
 
@@ -136,8 +133,7 @@ public class SpecificationBuilder<T> {
                     .map(DefaultSpecification::new)
                     .collect(Collectors.toList());
 
-            Predicate[] predicates = specs.stream().map(item -> item.toPredicate(root, query, builder))
-                    .toArray(Predicate[]::new);
+            Predicate[] predicates = build(specs, root, query, builder);
             if (operator == DefaultSpecification.Operator.OR) {
                 return builder.or(predicates);
             } else {
@@ -146,7 +142,6 @@ public class SpecificationBuilder<T> {
         };
     }
 
-    @SuppressWarnings("unchecked")
     Specification<T> join(String field, List<FilterDefinition> filters) {
         return (root, query, builder) -> {
 
@@ -158,14 +153,27 @@ public class SpecificationBuilder<T> {
                     .map(filter -> new DefaultSpecification(join, filter))
                     .collect(Collectors.toList());
 
-            Predicate[] predicates = specs.stream().map(item -> item.toPredicate(root, query, builder))
-                    .toArray(Predicate[]::new);
+            Predicate[] predicates = build(specs, root, query, builder);
             if (operator == DefaultSpecification.Operator.OR) {
                 return builder.or(predicates);
             } else {
                 return builder.and(predicates);
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    private Predicate[] build(List<Specification> specs, Root root, CriteriaQuery query, CriteriaBuilder builder) {
+        return specs.stream().map(item -> {
+            Predicate predicate = item.toPredicate(root, query, builder);
+            if (predicate != null) {
+                return predicate;
+            } else {
+
+                throw new SearchException(String.format("invalid filter for query, matcher for field '%s' not found.",
+                        ((DefaultSpecification) item).getOriginalFieldName()));
+            }
+        }).toArray(Predicate[]::new);
     }
 
 }

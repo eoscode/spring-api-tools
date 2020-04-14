@@ -13,6 +13,7 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
         this.criteria = filterCriteria;
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
         return build(criteria, root, criteriaQuery, criteriaBuilder);
@@ -23,6 +24,14 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
         this.criteria = filterCriteria;
     }
 
+    public String getOriginalFieldName() {
+        if (join != null) {
+            return join.getAttribute().getName() + "." + criteria.getField();
+        } else {
+            return criteria.getField();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private Predicate build(FilterDefinition criteria, Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
         Path path;
@@ -31,7 +40,7 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
         } else {
             path = root.get(criteria.getField());
         }
-        //Class<?> javaType = root.get(criteria.getField()).getJavaType();
+
         Class<?> javaType = path.getJavaType();
 
         if (criteria.getOperator().equalsIgnoreCase(Operator.EQ.getValue())) {
@@ -175,7 +184,7 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
             this.value = value;
         }
 
-        private String value;
+        private final String value;
         String getValue() {
             return value;
         }

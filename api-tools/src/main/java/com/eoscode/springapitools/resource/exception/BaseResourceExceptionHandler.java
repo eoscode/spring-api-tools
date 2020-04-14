@@ -1,5 +1,6 @@
 package com.eoscode.springapitools.resource.exception;
 
+import com.eoscode.springapitools.data.filter.SearchException;
 import com.eoscode.springapitools.service.exceptions.AuthorizationException;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.service.exceptions.ValidationException;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import java.net.URI;
+import java.time.Instant;
 
 public class BaseResourceExceptionHandler {
 
@@ -33,7 +35,7 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<StandardError> objectNotFound(EntityNotFoundException e, HttpServletRequest request) {
-		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(),
+		StandardError standardError = new StandardError(now(), HttpStatus.NOT_FOUND.value(),
 				"Not found", e.getMessage(), request.getRequestURI());
 
 		log.error("objectNotFound -> " + e.getMessage(), e);
@@ -42,7 +44,7 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<StandardError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
-		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
 				"Validation error", e.getMessage(), request.getRequestURI());
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
 			validationError.addError(fieldError.getField(), fieldError.getDefaultMessage());
@@ -54,7 +56,7 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<StandardError> constraintViolation(ConstraintViolationException e) {
-		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
 				"Validation error", e.getMessage(), getPathURI().toString());
 
 		if (e.getConstraintViolations() != null) {
@@ -67,7 +69,7 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<StandardError> dataIntegrityViolationException(DataIntegrityViolationException e) {
-		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.CONFLICT.value(),
+		ValidationError validationError = new ValidationError(now(), HttpStatus.CONFLICT.value(),
 				"Database error", e.getLocalizedMessage(), getPath());
 
 		log.error("dataIntegrityViolationException -> " + e.getMessage(), e);
@@ -76,17 +78,23 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler(ValidationException.class)
 	public ResponseEntity<StandardError> validation(ValidationException e, HttpServletRequest request) {
-		ValidationError validationError = new ValidationError(System.currentTimeMillis(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
 				"Validation error", e.getMessage(), request.getRequestURI());
-		validationError.addError("", e.getMessage());
-
 		log.error("validation -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
+	}
+
+	@ExceptionHandler(SearchException.class)
+	public ResponseEntity<StandardError> searchException(SearchException e, HttpServletRequest request) {
+		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
+				"Search error", e.getMessage(), request.getRequestURI());
+		log.error("searchException -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
 	@ExceptionHandler(AuthorizationException.class)
 	public ResponseEntity<StandardError> authorization(AuthorizationException e, HttpServletRequest request) {
-		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED.value(),
+		StandardError standardError = new StandardError(now(), HttpStatus.UNAUTHORIZED.value(),
 				"Access denied", e.getMessage(), request.getRequestURI());
 
 		log.error("authorization -> " + e.getMessage(), e);
@@ -95,11 +103,15 @@ public class BaseResourceExceptionHandler {
 
 	@ExceptionHandler({UsernameNotFoundException.class, AuthenticationException.class})
 	public ResponseEntity<StandardError> objectNotFound(AuthenticationException e, HttpServletRequest request) {
-		StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.FORBIDDEN.value(),
+		StandardError standardError = new StandardError(now(), HttpStatus.FORBIDDEN.value(),
 				"Access denied", e.getMessage(), request.getRequestURI());
 
 		log.error("objectNotFound -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(standardError);
+	}
+
+	private String now() {
+		return Instant.now().toString();
 	}
 
 }
