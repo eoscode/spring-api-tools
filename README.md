@@ -320,7 +320,7 @@ As funcionalidades disponíveis em `AbstractResouce` e `AbstractRepositoryResour
 
 Por padrão, todos os atributos são suportados (tipos primitivos e objetos). Contudo, os tipos primitivos são configurados
 para ignorar o valor default. 
-Ex.: Para atributo do tipo **int** e **long**, o valor zero é ignorado, para **boolean** o valor false.
+Ex.: Para os atributos do tipo **int** e **long**, o valor zero é ignorado, para **boolean**, o valor false.
 
 Para mudar esse comportamento, temos a configuração `ignoreDefaultValue` na annotation `Find`, que por padrão, informa que
 os valores default, devem ser ignorados. Se necessário, podemos configurar uma lista de atributos que devem ser exceção ao tratamento
