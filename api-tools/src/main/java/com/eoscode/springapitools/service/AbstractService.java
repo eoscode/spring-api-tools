@@ -8,6 +8,7 @@ import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.data.filter.SearchException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
 import com.eoscode.springapitools.util.ReflectionUtils;
 import org.apache.commons.logging.Log;
@@ -485,9 +486,12 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
         for (String filter : filters) {
             Matcher matcher = pattern.matcher(filter);
-            while (matcher.find()) {
+            if (matcher.find()) {
                 criteria.add(new FilterDefinition(matcher.group(1),
                         matcher.group(2), matcher.group(3)));
+            } else {
+                log.error("createQueryDefinition: invalid filter for query, matcher not found.");
+                throw new SearchException("invalid filter for query, matcher not found.");
             }
         }
 
