@@ -314,6 +314,58 @@ spring-api-tools:
   list-default-size: 0 //valor limite desabilitado. Se diferente de zero, ira impor o limite
 ``` 
 
+#### Tipos suportados
+
+<table>
+    <tr>
+        <th>Tipo</th>
+        <th>Operadores</th>
+    </tr>
+    <tr>
+        <th>String</th>
+        <th>=, !=, $like, $notLike, $startsWith, $endsWth, $btw, $in, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Integer/int</th>
+        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Long/long</th>
+        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Double/double</th>
+        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Boolean/boolean</th>
+        <th>=, !=, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Boolean/boolean</th>
+        <th>=, !=, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>BigDecimal</th>
+        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+    </tr>
+    <tr>
+        <th>Date</th>
+        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull
+        <br>Obs.: Não suportado por <b>{path}/ e {path}/find</b>.
+        <br>Suporta representação da data no formato timestamp (long) e ISO 8601 no formato UTC time zone (String)</th>
+    </tr>
+    <tr>
+        <th>List</th>
+        <th>$size, $isEmpty, $isNotEmpty</th>
+    </tr>
+    <tr>
+        <th>Set</th>
+        <th>$size, $isEmpty, $isNotEmpty</th>
+    </tr>    
+</table>    
+
+
 ### {path}/ e {path}/find
 
 As funcionalidades disponíveis em `AbstractResouce` e `AbstractRepositoryResource`, possibilitam aplicar filtros nos atributos da entidade.
