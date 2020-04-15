@@ -326,23 +326,23 @@ spring-api-tools:
         <td>=, !=, $like, $notLike, $startsWith, $endsWth, $btw, $in, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Integer/int</td>
+        <td>Integer / int</td>
         <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Long/long</td>
+        <td>Long / long</td>
         <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Double/double</td>
+        <td>Double / double</td>
         <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Boolean/boolean</td>
+        <td>Boolean / boolean</td>
         <td>=, !=, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Boolean/boolean</td>
+        <td>Boolean / boolean</td>
         <td>=, !=, $isNull, $isNotNull</td>
     </tr>
     <tr>
