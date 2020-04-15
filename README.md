@@ -342,10 +342,6 @@ spring-api-tools:
         <td>=, !=, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <td>Boolean / boolean</td>
-        <td>=, !=, $isNull, $isNotNull</td>
-    </tr>
-    <tr>
         <td>BigDecimal</td>
         <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
