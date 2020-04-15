@@ -322,46 +322,46 @@ spring-api-tools:
         <th>Operadores</th>
     </tr>
     <tr>
-        <th>String</th>
-        <th>=, !=, $like, $notLike, $startsWith, $endsWth, $btw, $in, $isNull, $isNotNull</th>
+        <td>String</td>
+        <td>=, !=, $like, $notLike, $startsWith, $endsWth, $btw, $in, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Integer/int</th>
-        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+        <td>Integer/int</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Long/long</th>
-        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+        <td>Long/long</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Double/double</th>
-        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+        <td>Double/double</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Boolean/boolean</th>
-        <th>=, !=, $isNull, $isNotNull</th>
+        <td>Boolean/boolean</td>
+        <td>=, !=, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Boolean/boolean</th>
-        <th>=, !=, $isNull, $isNotNull</th>
+        <td>Boolean/boolean</td>
+        <td>=, !=, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>BigDecimal</th>
-        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</th>
+        <td>BigDecimal</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
     </tr>
     <tr>
-        <th>Date</th>
-        <th>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull
+        <td>Date</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull
         <br>Obs.: Não suportado por <b>{path}/ e {path}/find</b>.
-        <br>Suporta representação da data no formato timestamp (long) e ISO 8601 no formato UTC time zone (String)</th>
+        <br>Suporta representação da data no formato timestamp (long) e ISO 8601 no formato UTC time zone (String)</td>
     </tr>
     <tr>
-        <th>List</th>
-        <th>$size, $isEmpty, $isNotEmpty</th>
+        <td>List</td>
+        <td>$size, $isEmpty, $isNotEmpty</td>
     </tr>
     <tr>
-        <th>Set</th>
-        <th>$size, $isEmpty, $isNotEmpty</th>
+        <td>Set</td>
+        <td>$size, $isEmpty, $isNotEmpty</td>
     </tr>    
 </table>    
 
