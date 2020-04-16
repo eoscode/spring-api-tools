@@ -195,7 +195,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		} else {
 			int maxSize = getListDefaultSize(queryParameter.getSize());
 			if (maxSize > 0) {
-				Page<Entity> page = getService().query(query, queryParameter, PageRequest.of(0, maxSize));
+				Page<Entity> page = getService().query(query, queryParameter, PageRequest.of(0, maxSize, pageable.getSort()));
 				result = (T) page.getContent();
 				if (page.getTotalElements() > maxSize) {
 					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
