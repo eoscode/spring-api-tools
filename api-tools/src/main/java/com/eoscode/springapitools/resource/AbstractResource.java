@@ -1,13 +1,16 @@
 package com.eoscode.springapitools.resource;
 
+import com.eoscode.springapitools.config.SprintApiToolsProperties;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
+import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.service.AbstractService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -22,7 +25,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings({"Duplicates", "unchecked"})
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
@@ -31,6 +33,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	
 	@Autowired
 	private ApplicationContext applicationContext;
+
+	@Autowired
+	private SprintApiToolsProperties sprintApiToolsProperties;
 
 	private Service service;
 
@@ -142,28 +147,86 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping(value = {"","/find"})
-	public ResponseEntity<Page<Entity>> find(Entity filterBy,
-											 @PageableDefault Pageable pageable) {
+	@GetMapping(value = {"/page","/find/page"})
+	public ResponseEntity<Page<Entity>> findWithPage(Entity filterBy,
+													 @PageableDefault Pageable pageable) {
 		Page<Entity> page = getService().find(filterBy, pageable);
 		return ResponseEntity.ok(page);
 	}
 
+	@GetMapping(value = {"","/find"})
+	public <T> T find(Entity filterBy, @PageableDefault Pageable pageable,
+					  QueryParameter queryParameter) {
+		T result;
+		if (isDefaultPageable(queryParameter.getPageable())) {
+			result = (T) getService().find(filterBy, pageable);
+		} else {
+			int maxSize = getListDefaultSize(queryParameter.getSize());
+			if (maxSize > 0) {
+				Page<Entity> page = getService().find(filterBy, PageRequest.of(0, maxSize, pageable.getSort()));
+				result = (T) page.getContent();
+				if (page.getTotalElements() > maxSize) {
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+				}
+			} else {
+				result = (T) getService().find(filterBy, pageable.getSort());
+			}
+		}
+		return (T) ResponseEntity.ok(result);
+	}
+
+	@GetMapping("/query/page")
+	public ResponseEntity<Page<Entity>> queryWithPage(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
+													  @PageableDefault Pageable pageable,
+													  QueryParameter queryParameter) {
+		Page<Entity> list = getService().query(query, queryParameter, pageable);
+		return ResponseEntity.ok(list);
+	}
+
 	@GetMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestParam(value = "opt") String query,
-											  @RequestParam(value = "distinct", required = false,
-													  defaultValue = "true") boolean distinct,
-											  @PageableDefault Pageable pageable,
-											  @RequestParam Map<String, String> params) {
-		Page<Entity> page = getService().query(query, pageable, distinct, params);
-		return ResponseEntity.ok(page);
+	public <T> T query(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
+					   @PageableDefault Pageable pageable,
+					   QueryParameter queryParameter) {
+		T result;
+		if (isDefaultPageable(queryParameter.getPageable())) {
+			result = (T) getService().query(query, queryParameter, pageable);
+		} else {
+			int maxSize = getListDefaultSize(queryParameter.getSize());
+			if (maxSize > 0) {
+				Page<Entity> page = getService().query(query, queryParameter, PageRequest.of(0, maxSize, pageable.getSort()));
+				result = (T) page.getContent();
+				if (page.getTotalElements() > maxSize) {
+					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
+									" list-default-size-override=%s",
+							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+				}
+			} else {
+				result = (T) getService().query(query, queryParameter, pageable.getSort());
+			}
+		}
+		return (T) ResponseEntity.ok(result);
+	}
+
+	@PostMapping("/query/page")
+	public ResponseEntity<Page<Entity>> queryWitPage(@RequestBody QueryDefinition queryDefinition,
+					   @PageableDefault Pageable pageable) {
+		Page<Entity> result = getService().query(queryDefinition, pageable);
+		return ResponseEntity.ok(result);
 	}
 
 	@PostMapping("/query")
-	public ResponseEntity<Page<Entity>> query(@RequestBody QueryDefinition queryDefinition,
+	public <T> T query(@RequestBody QueryDefinition queryDefinition,
+											  @RequestParam(value = "pageable", required = false) Boolean page,
 											  @PageableDefault Pageable pageable) {
-		Page<Entity> page = getService().query(queryDefinition, pageable);
-		return ResponseEntity.ok(page);
+		T result;
+		if (isDefaultPageable(page)) {
+			result = (T) getService().query(queryDefinition, pageable);
+		} else {
+			result = (T) getService().query(queryDefinition, pageable.getSort());
+		}
+		return (T) ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/all")
@@ -174,8 +237,22 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping("/pages")
 	public ResponseEntity<Page<Entity>> findAllPageAndSort(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
-		Page<Entity> page = getService().findAllPages(pageable);
+		Page<Entity> page = getService().findAllWithPage(pageable);
 		return ResponseEntity.ok(page);
+	}
+
+	private boolean isDefaultPageable(Boolean pageable) {
+		if (pageable != null) {
+			return pageable;
+		}
+		return sprintApiToolsProperties.isEnableDefaultPageable();
+	}
+
+	private int getListDefaultSize(Integer size) {
+		if (size != null && sprintApiToolsProperties.isListDefaultSizeOverride()) {
+			return size;
+		}
+		return sprintApiToolsProperties.getListDefaultSize();
 	}
 
 }

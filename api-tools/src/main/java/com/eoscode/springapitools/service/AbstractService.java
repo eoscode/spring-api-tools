@@ -9,7 +9,7 @@ import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
-import com.eoscode.springapitools.util.ReflectionUtils;
+import com.eoscode.springapitools.util.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -43,12 +44,14 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     @Autowired
     private ApplicationContext applicationContext;
 
+    private EntityManager entityManager;
+
     private Repository repository;
 
-    private Type repositoryType;
-    private Type entityType;
-    private Type identifierType;
-    private Class<Entity> entityClass;
+    private final Type repositoryType;
+    private final Type entityType;
+    private final Type identifierType;
+    private final Class<Entity> entityClass;
 
     private Set<Field> findAttributeAnnotations = new HashSet<>();
 
@@ -95,7 +98,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @PostConstruct
     private void metaData() {
-
         findAttributeAnnotations = getAllFields(entityClass, withAnnotation(FindAttribute.class));
 
         if (applicationContext != null) {
@@ -113,7 +115,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
                 customDeleteByIdRepository = applicationContext.getBean(CustomDeleteByIdRepository.class);
             }
         }
-
     }
 
     @SuppressWarnings("Duplicates")
@@ -130,7 +131,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = classType.getDeclaredField(noDelete.field());
                 field.setAccessible(true);
-                field.set(entity, ReflectionUtils.getObject(field, noDelete.defaultValue()));
+                field.set(entity, ObjectUtils.getObject(field, noDelete.defaultValue()));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -140,7 +141,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Transactional
     public Entity update(Entity entity) throws EntityNotFoundException {
-
         Entity entityOld = null;
         if (entity instanceof Identifier<?>) {
             ID id =  ((Identifier<ID>) entity).getId();
@@ -157,17 +157,14 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         } else {
             return getRepository().save(entity);
         }
-
     }
 
     public Entity findById(ID id) throws EntityNotFoundException {
-
         EntityNotFoundException objectNotFound = new EntityNotFoundException(
                 "Object not found! Id: " + id + ", Type: " + getEntityType().getTypeName ());
 
         Optional<Entity> result = customFindByIdRepository.findCustomById(getEntityClass(), id);
         return result.orElse(getRepository().findById(id).orElseThrow(() -> objectNotFound));
-
     }
 
     public Entity findDetailById(ID id) throws EntityNotFoundException {
@@ -221,26 +218,24 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return getRepository().findAll(example, pageable);
     }
 
-    public Page<Entity> query(String query, Pageable pageable, Boolean distinct, Map<String, String> params) {
-        List<FilterDefinition> criteria = new ArrayList<>();
-        Pattern pattern = Pattern.compile(
-                "(\\w+.?\\w*[^><!=])(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull)([\\w]{8}(-[\\w]{4}){3}-[\\w]{12}|\\w+-?\\w*|\\w+.?\\w*),",
-                Pattern.UNICODE_CHARACTER_CLASS);
-        Matcher matcher = pattern.matcher(query + ",");
+    public List<Entity> query(String query, QueryParameter queryParameter, Sort sort) {
+        QueryDefinition queryDefinition = createQueryDefinition(query, queryParameter);
+        return getRepository().findAll(getDefaultSpecification(queryDefinition), sort);
+    }
 
-        while (matcher.find()) {
-            criteria.add(new FilterDefinition(matcher.group(1),
-                    matcher.group(2), matcher.group(3)));
-        }
-        QueryDefinition queryDefinition = new QueryDefinition();
-        queryDefinition.setDistinct(distinct);
-        queryDefinition.setFilters(criteria);
-        queryDefinition.setOperator(params.getOrDefault("operator", "and"));
+    public Page<Entity> query(String query, QueryParameter queryParameter, Pageable pageable) {
+        QueryDefinition queryDefinition = createQueryDefinition(query, queryParameter);
         return query(queryDefinition, pageable);
     }
 
     public List<Entity> query(QueryDefinition queryDefinition) {
-        return getRepository().findAll(getDefaultSpecification(queryDefinition));
+        List<Sort.Order> orders = getDefaultSort(queryDefinition.getSorts());
+        return getRepository().findAll(getDefaultSpecification(queryDefinition), Sort.by(orders));
+    }
+
+    public List<Entity> query(QueryDefinition queryDefinition, Sort sort) {
+        Sort newSort = mergeSort(queryDefinition.getSorts(), sort);
+        return getRepository().findAll(getDefaultSpecification(queryDefinition), newSort);
     }
 
     public Page<Entity> query(QueryDefinition queryDefinition, Pageable pageable) {
@@ -260,31 +255,28 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 specification = Specification.where(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 throw new IllegalArgumentException("error in identify noDeleteEntity field for findAll", e);
             }
+            return getRepository().findAll(specification, sort);
         }
-
-        return getRepository().findAll(specification, sort);
-
+        return getRepository().findAll(sort);
     }
 
     @SuppressWarnings("Duplicates")
-    public Page<Entity> findAllPages(Pageable pageable) {
+    public Page<Entity> findAllWithPage(Pageable pageable) {
+        Specification specification;
         if (getEntityClass().isAnnotationPresent(NoDelete.class)) {
             NoDelete noDelete = getEntityClass().getAnnotation(NoDelete.class);
-
-            Specification specification;
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 specification = Specification.where(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 throw new IllegalArgumentException("error in identify noDeleteEntity field for findAllPages", e);
             }
             return getRepository().findAll(specification, pageable);
-
         } else {
             return getRepository().findAll(pageable);
         }
@@ -300,7 +292,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         SpecificationBuilder<Entity> builder = new SpecificationBuilder<>();
         builder.distinct(queryDefinition.isDistinct());
         builder.sorts(queryDefinition.getSorts());
-        criteria.forEach(builder::filter);
+
+        if (queryDefinition.getFilters() != null) {
+            criteria.forEach(builder::filter);
+        }
 
         if ("or".equalsIgnoreCase(queryDefinition.getOperator())) {
             builder.withOr();
@@ -319,7 +314,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 spec = Specification.where(spec).and(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -409,7 +404,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 field.setAccessible(true);
-                field.set(entity, ReflectionUtils.getObject(field, noDelete.defaultValue()));
+                field.set(entity, ObjectUtils.getObject(field, noDelete.defaultValue()));
 
                 matcher = matcher.withMatcher(noDelete.field(), ExampleMatcher.GenericPropertyMatchers.exact());
             } catch (Exception e) {
@@ -456,13 +451,55 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return orders;
     }
 
+    private Sort mergeSort(List<SortDefinition> sortDefinitions, Sort sort) {
+        List<Sort.Order> orders = getDefaultSort(sortDefinitions);
+        sort.forEach(orders::add);
+        return Sort.by(orders);
+    }
+
     private Pageable getDefaultSortAndPageRequest(List<SortDefinition> sorts, Pageable pageable) {
         if (pageable == null) {
             return null;
         }
-        List<Sort.Order> orders = getDefaultSort(sorts);
-        pageable.getSort().forEach(orders::add);
-        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+        Sort sort = mergeSort(sorts, pageable.getSort());
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+    }
+
+    private QueryDefinition createQueryDefinition(String query, QueryParameter queryParameter) {
+        List<FilterDefinition> criteria = new ArrayList<>();
+
+        List<String> filters = new ArrayList<>();
+        if (query != null && !query.isEmpty()) {
+            filters.addAll(Arrays.asList(query.split(",")));
+        }
+        if (queryParameter.getFilters() != null) {
+            filters.addAll(Arrays.asList(queryParameter.getFilters()));
+        }
+
+        Pattern pattern = Pattern.compile(
+                "(\\w.*[^><!=])" +
+                        "(>=|<=|=|!=|>|<|\\$like|\\$notLike|\\$isNull|\\$isNotNull|\\$startsWith" +
+                        "|\\$endsWith|\\$isEmpty|\\$isNotEmpty|\\$btw|\\$in)" +
+                        "(\\w.*|(>=|<=|=|!=|>|<)?+;\\d)?",
+                Pattern.UNICODE_CHARACTER_CLASS);
+
+        for (String filter : filters) {
+            Matcher matcher = pattern.matcher(filter);
+            if (matcher.find()) {
+                criteria.add(new FilterDefinition(matcher.group(1),
+                        matcher.group(2), matcher.group(3)));
+            } else {
+                log.error("createQueryDefinition: invalid filter for query, matcher not found.");
+                throw new SearchException("invalid filter for query, matcher not found.");
+            }
+        }
+
+        QueryDefinition queryDefinition = new QueryDefinition();
+        queryDefinition.setDistinct(queryParameter.isDistinct());
+        queryDefinition.setFilters(criteria);
+        queryDefinition.setOperator(queryParameter.getOperator());
+
+        return queryDefinition;
     }
 
 }
