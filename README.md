@@ -628,10 +628,9 @@ Exemplos:
     {
      "field": "dateOfFoundation",
      "operator": "<",
-     "value": "2020-04-14T22:42:53Z" //ou no formato timestamp 1586833200000
+     "value": "2020-04-14T22:42:53Z"
     }
-  ],
-  "distinct": true
+  ]
 }
 ``` 
 
