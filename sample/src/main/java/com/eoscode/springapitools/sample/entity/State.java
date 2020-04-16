@@ -4,10 +4,10 @@ import com.eoscode.springapitools.data.domain.Identifier;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -38,10 +38,12 @@ public class State implements Identifier<String> {
     @Column(name = "UF", length = 2)
     private String uf;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Temporal(TemporalType.DATE)
     @Column(name = "DATE_FOUNDATION")
     private Date dateOfFoundation;
+
+    @Column(name = "AVERAGE_SALARY")
+    private BigDecimal averageSalary;
 
     public State() {}
 
@@ -86,4 +88,13 @@ public class State implements Identifier<String> {
     public void setDateOfFoundation(Date dateOfFoundation) {
         this.dateOfFoundation = dateOfFoundation;
     }
+
+    public BigDecimal getAverageSalary() {
+        return averageSalary;
+    }
+
+    public void setAverageSalary(BigDecimal averageSalary) {
+        this.averageSalary = averageSalary;
+    }
+
 }
