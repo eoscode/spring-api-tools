@@ -524,6 +524,12 @@ Exemplos:
 ```http request
 /api/state/query?opt=cities.population>=50000&distinct=true
 ```  
+* Listar os estados que foram fundados no dia 14/04/20
+```http request
+/api/state/query?opt=dateOfFoundation=2020-04-14T22:42:53Z
+/api/state/query?opt=dateOfFoundation=1586833200000
+```  
+
 Obs.: 
 * As consultas suportam `org.springframework.data.domain.Pageable` (parâmetro page e size), com os valores default do Spring.
 * As consultas suportam `org.springframework.data.domain.Sort`, com os valores default do Spring.
@@ -599,7 +605,7 @@ Exemplos:
 }
 ```
 
-Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
+* Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
 
 ```json
 {
@@ -613,6 +619,21 @@ Listar os estados que possuem cidades com população maior ou igual a 50000 hab
   "distinct": true
 }
 ```
+
+* Listar os estados que foram fundados antes de 14/04/20
+
+```json
+{
+  "filters": [
+    {
+     "field": "dateOfFoundation",
+     "operator": "<",
+     "value": "2020-04-14T22:42:53Z" //ou no formato timestamp 1586833200000
+    }
+  ],
+  "distinct": true
+}
+``` 
 
 Obs.:
 * O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
