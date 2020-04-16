@@ -8,9 +8,8 @@ import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
-import com.eoscode.springapitools.data.filter.SearchException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
-import com.eoscode.springapitools.util.ReflectionUtils;
+import com.eoscode.springapitools.util.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,7 +131,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = classType.getDeclaredField(noDelete.field());
                 field.setAccessible(true);
-                field.set(entity, ReflectionUtils.getObject(field, noDelete.defaultValue()));
+                field.set(entity, ObjectUtils.getObject(field, noDelete.defaultValue()));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -256,7 +255,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 specification = Specification.where(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 throw new IllegalArgumentException("error in identify noDeleteEntity field for findAll", e);
             }
@@ -273,7 +272,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 specification = Specification.where(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 throw new IllegalArgumentException("error in identify noDeleteEntity field for findAllPages", e);
             }
@@ -315,7 +314,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             try {
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 spec = Specification.where(spec).and(hasField(noDelete.field(),
-                        ReflectionUtils.getObject(field, noDelete.defaultValue())));
+                        ObjectUtils.getObject(field, noDelete.defaultValue())));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -405,7 +404,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 field.setAccessible(true);
-                field.set(entity, ReflectionUtils.getObject(field, noDelete.defaultValue()));
+                field.set(entity, ObjectUtils.getObject(field, noDelete.defaultValue()));
 
                 matcher = matcher.withMatcher(noDelete.field(), ExampleMatcher.GenericPropertyMatchers.exact());
             } catch (Exception e) {

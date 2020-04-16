@@ -314,6 +314,54 @@ spring-api-tools:
   list-default-size: 0 //valor limite desabilitado. Se diferente de zero, ira impor o limite
 ``` 
 
+#### Tipos suportados
+
+<table>
+    <tr>
+        <th>Tipo</th>
+        <th>Operadores</th>
+    </tr>
+    <tr>
+        <td>String</td>
+        <td>=, !=, $like, $notLike, $startsWith, $endsWth, $btw, $in, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>Integer / int</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>Long / long</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>Double / double</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>Boolean / boolean</td>
+        <td>=, !=, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>BigDecimal</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull</td>
+    </tr>
+    <tr>
+        <td>Date</td>
+        <td>=, !=, >, >=, <, <=, $in, $btw, $isNull, $isNotNull
+        <br>Obs.: Não suportado por <b>{path}/ e {path}/find</b>.
+        <br>Suporta representação da data no formato timestamp (long) e ISO 8601 no formato UTC time zone (String)</td>
+    </tr>
+    <tr>
+        <td>List</td>
+        <td>$size, $isEmpty, $isNotEmpty</td>
+    </tr>
+    <tr>
+        <td>Set</td>
+        <td>$size, $isEmpty, $isNotEmpty</td>
+    </tr>    
+</table>    
+
+
 ### {path}/ e {path}/find
 
 As funcionalidades disponíveis em `AbstractResouce` e `AbstractRepositoryResource`, possibilitam aplicar filtros nos atributos da entidade.
@@ -476,6 +524,12 @@ Exemplos:
 ```http request
 /api/state/query?opt=cities.population>=50000&distinct=true
 ```  
+* Listar os estados que foram fundados no dia 14/04/20
+```http request
+/api/state/query?opt=dateOfFoundation=2020-04-14T22:42:53Z
+/api/state/query?opt=dateOfFoundation=1586833200000
+```  
+
 Obs.: 
 * As consultas suportam `org.springframework.data.domain.Pageable` (parâmetro page e size), com os valores default do Spring.
 * As consultas suportam `org.springframework.data.domain.Sort`, com os valores default do Spring.
@@ -551,7 +605,7 @@ Exemplos:
 }
 ```
 
-Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
+* Listar os estados que possuem cidades com população maior ou igual a 50000 habitantes.
 
 ```json
 {
@@ -565,6 +619,20 @@ Listar os estados que possuem cidades com população maior ou igual a 50000 hab
   "distinct": true
 }
 ```
+
+* Listar os estados que foram fundados antes de 14/04/20
+
+```json
+{
+  "filters": [
+    {
+     "field": "dateOfFoundation",
+     "operator": "<",
+     "value": "2020-04-14T22:42:53Z"
+    }
+  ]
+}
+``` 
 
 Obs.:
 * O valor default do parâmetro `distinct` é true. Sendo assim, pode ser omitido.
