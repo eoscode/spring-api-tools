@@ -9,20 +9,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unused", "MismatchedQueryAndUpdateOfCollection", "UnusedReturnValue"})
 public class SpecificationBuilder<T> {
 
     private Boolean distinct;
-    private final List<FilterDefinition> filters;
-    private final Map<String, List<FilterDefinition>> joins;
+    private final Map<String, List<FilterDefinition>> filters;
     private final List<SortDefinition> sorts;
     private DefaultSpecification.Operator operator;
 
     private Specification<T> result = null;
 
     public SpecificationBuilder() {
-        filters = new ArrayList<>();
-        joins = new HashMap<>();
+        filters = new HashMap<>();
         sorts = new ArrayList<>();
         operator = DefaultSpecification.Operator.AND;
     }
@@ -54,15 +52,16 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder filter(FilterDefinition filter) {
         String[] fields = filter.getField().split("\\.");
+        String path = "";
         if (fields.length == 2) {
+            path = fields[0];
             filter.setField(fields[1]);
-
-            List<FilterDefinition> filters = joins.computeIfAbsent(fields[0], k -> new ArrayList<>());
-            filters.add(filter);
-            joins.put(fields[0], filters);
-        } else {
-            filters.add(filter);
         }
+
+        List<FilterDefinition> filters = this.filters.computeIfAbsent(path, k -> new ArrayList<>());
+        filters.add(filter);
+        this.filters.put(path, filters);
+
         return this;
     }
 
@@ -99,59 +98,38 @@ public class SpecificationBuilder<T> {
     }
 
     public Specification<T> build() {
-        if (filters.size() == 0 && joins.size() == 0) {
+        if (filters.size() == 0) {
             return null;
         }
 
-        if (filters.size() > 0) {
-            result = where(filters);
-        }
-
-        joins.forEach((key, filters) -> {
-            if (result == null) {
-                result = Specification.where(join(key, filters));
+        filters.forEach((key, filters) -> {
+            if (operator == DefaultSpecification.Operator.OR) {
+                result = Specification.where(result).or(where(key, filters));
             } else {
-                if (operator == DefaultSpecification.Operator.OR) {
-                    result = Specification.where(result).or(join(key, filters));
-                } else {
-                    result = Specification.where(result).and(join(key, filters));
-                }
+                result = Specification.where(result).and(where(key, filters));
             }
         });
 
         return result;
     }
 
-    Specification<T> where(List<FilterDefinition> filters) {
+    Specification<T> where(String field, List<FilterDefinition> filters) {
         return (root, query, builder) -> {
-
             if (distinct != null) {
                 query.distinct(distinct);
             }
 
-            List<Specification> specs = filters.stream()
-                    .map(DefaultSpecification::new)
-                    .collect(Collectors.toList());
-
-            Predicate[] predicates = build(specs, root, query, builder);
-            if (operator == DefaultSpecification.Operator.OR) {
-                return builder.or(predicates);
+            List<Specification> specs;
+            if ("".equals(field)) {
+                specs = filters.stream()
+                        .map(DefaultSpecification::new)
+                        .collect(Collectors.toList());
             } else {
-                return builder.and(predicates);
+                final Join join = root.join(field, JoinType.LEFT);
+                specs = filters.stream()
+                        .map(filter -> new DefaultSpecification(join, filter))
+                        .collect(Collectors.toList());
             }
-        };
-    }
-
-    Specification<T> join(String field, List<FilterDefinition> filters) {
-        return (root, query, builder) -> {
-
-            if (distinct != null) {
-                query.distinct(distinct);
-            }
-            final Join join = root.join(field, JoinType.LEFT);
-            List<Specification> specs = filters.stream()
-                    .map(filter -> new DefaultSpecification(join, filter))
-                    .collect(Collectors.toList());
 
             Predicate[] predicates = build(specs, root, query, builder);
             if (operator == DefaultSpecification.Operator.OR) {
@@ -169,7 +147,6 @@ public class SpecificationBuilder<T> {
             if (predicate != null) {
                 return predicate;
             } else {
-
                 throw new SearchException(String.format("invalid filter for query, matcher for field '%s' not found.",
                         ((DefaultSpecification) item).getOriginalFieldName()));
             }
