@@ -1,5 +1,6 @@
 package com.eoscode.springapitools.service;
 
+import com.eoscode.springapitools.config.SpringApiToolsProperties;
 import com.eoscode.springapitools.data.domain.Find;
 import com.eoscode.springapitools.data.domain.FindAttribute;
 import com.eoscode.springapitools.data.domain.Identifier;
@@ -43,6 +44,9 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private SpringApiToolsProperties springApiToolsProperties;
 
     private EntityManager entityManager;
 
@@ -249,7 +253,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     }
 
     public List<Entity> findAll(Sort sort) {
-        Specification specification = null;
+        Specification specification;
         if (getEntityClass().isAnnotationPresent(NoDelete.class)) {
             NoDelete noDelete = getEntityClass().getAnnotation(NoDelete.class);
             try {
@@ -292,6 +296,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         SpecificationBuilder<Entity> builder = new SpecificationBuilder<>();
         builder.distinct(queryDefinition.isDistinct());
         builder.sorts(queryDefinition.getSorts());
+        builder.withStringIgnoreCase(springApiToolsProperties.getStringCaseSensitive());
 
         if (queryDefinition.getFilters() != null) {
             criteria.forEach(builder::filter);

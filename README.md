@@ -314,6 +314,14 @@ spring-api-tools:
   list-default-size: 0 //valor limite desabilitado. Se diferente de zero, ira impor o limite
 ``` 
 
+Filtros aplicados a atributos do tipo string, realizam comparação com case sensitive habilitado. Para alterar o comportamento, configure o 
+parâmetro `string-case-sensitive`, que indica se o valor informado na expressão, será no formato lowercase ou uppercase.    
+
+```yaml
+spring-api-tools:
+  string-case-sensitive: lowercase
+```
+
 #### Tipos suportados
 
 <table>
