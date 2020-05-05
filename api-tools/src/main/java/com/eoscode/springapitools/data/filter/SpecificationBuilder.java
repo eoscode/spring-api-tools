@@ -1,5 +1,6 @@
 package com.eoscode.springapitools.data.filter;
 
+import com.eoscode.springapitools.config.StringCaseSensitive;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
@@ -16,6 +17,7 @@ public class SpecificationBuilder<T> {
     private final Map<String, List<FilterDefinition>> filters;
     private final List<SortDefinition> sorts;
     private DefaultSpecification.Operator operator;
+    private StringCaseSensitive stringCaseSensitive;
 
     private Specification<T> result = null;
 
@@ -42,6 +44,11 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder withAnd() {
         this.operator = DefaultSpecification.Operator.AND;
+        return this;
+    }
+
+    public SpecificationBuilder withStringIgnoreCase(StringCaseSensitive stringCaseSensitive) {
+        this.stringCaseSensitive = stringCaseSensitive;
         return this;
     }
 
@@ -122,12 +129,20 @@ public class SpecificationBuilder<T> {
             List<Specification> specs;
             if ("".equals(field)) {
                 specs = filters.stream()
-                        .map(DefaultSpecification::new)
+                        .map(filterDefinition -> {
+                            DefaultSpecification defaultSpecification = new DefaultSpecification(filterDefinition);
+                            defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
+                            return defaultSpecification;
+                        })
                         .collect(Collectors.toList());
             } else {
                 final Join join = root.join(field, JoinType.LEFT);
                 specs = filters.stream()
-                        .map(filter -> new DefaultSpecification(join, filter))
+                        .map(filterDefinition -> {
+                            DefaultSpecification defaultSpecification = new DefaultSpecification(join, filterDefinition);
+                            defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
+                            return defaultSpecification;
+                        })
                         .collect(Collectors.toList());
             }
 

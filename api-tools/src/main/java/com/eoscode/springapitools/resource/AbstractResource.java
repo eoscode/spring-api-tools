@@ -1,6 +1,6 @@
 package com.eoscode.springapitools.resource;
 
-import com.eoscode.springapitools.config.SprintApiToolsProperties;
+import com.eoscode.springapitools.config.SpringApiToolsProperties;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
@@ -30,12 +30,12 @@ import java.util.List;
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
-	
+
 	@Autowired
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private SprintApiToolsProperties sprintApiToolsProperties;
+	private SpringApiToolsProperties springApiToolsProperties;
 
 	private Service service;
 
@@ -43,7 +43,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	private Type entityType;
 	private Type identifierType;
 	private Class<Entity> entityClass;
-	
+
 	public AbstractResource() {
 		Type type = getClass().getGenericSuperclass();
 		ParameterizedType pType = (ParameterizedType) type;
@@ -82,11 +82,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	private Class<Entity> getEntityClass() {
 		return entityClass;
 	}
-	
+
 	protected Service getService() {
 		return service;
 	}
-	
+
 	@PostMapping
 	public ResponseEntity<Entity> save(@Valid @RequestBody Entity entity) {
 		entity = getService().save(entity);
@@ -168,7 +168,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				if (page.getTotalElements() > maxSize) {
 					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
 									" list-default-size-override=%s",
-							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+							maxSize, page.getTotalElements(), maxSize, springApiToolsProperties.isListDefaultSizeOverride()));
 				}
 			} else {
 				result = (T) getService().find(filterBy, pageable.getSort());
@@ -200,7 +200,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				if (page.getTotalElements() > maxSize) {
 					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
 									" list-default-size-override=%s",
-							maxSize, page.getTotalElements(), maxSize, sprintApiToolsProperties.isListDefaultSizeOverride()));
+							maxSize, page.getTotalElements(), maxSize, springApiToolsProperties.isListDefaultSizeOverride()));
 				}
 			} else {
 				result = (T) getService().query(query, queryParameter, pageable.getSort());
@@ -245,14 +245,14 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		if (pageable != null) {
 			return pageable;
 		}
-		return sprintApiToolsProperties.isEnableDefaultPageable();
+		return springApiToolsProperties.isEnableDefaultPageable();
 	}
 
 	private int getListDefaultSize(Integer size) {
-		if (size != null && sprintApiToolsProperties.isListDefaultSizeOverride()) {
+		if (size != null && springApiToolsProperties.isListDefaultSizeOverride()) {
 			return size;
 		}
-		return sprintApiToolsProperties.getListDefaultSize();
+		return springApiToolsProperties.getListDefaultSize();
 	}
 
 }
