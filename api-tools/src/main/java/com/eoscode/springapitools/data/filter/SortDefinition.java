@@ -1,5 +1,7 @@
 package com.eoscode.springapitools.data.filter;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SortDefinition {
 
     private String field;
@@ -29,7 +31,9 @@ public class SortDefinition {
     }
 
     public enum Direction {
+        @JsonProperty("asc")
         ASC,
+        @JsonProperty("desc")
         DESC
     }
 
