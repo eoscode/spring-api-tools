@@ -118,6 +118,11 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             if (customDeleteByIdRepository == null) {
                 customDeleteByIdRepository = applicationContext.getBean(CustomDeleteByIdRepository.class);
             }
+
+            if (springApiToolsProperties == null) {
+                springApiToolsProperties = applicationContext.getBean(SpringApiToolsProperties.class);
+            }
+
         }
     }
 
