@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties("spring-api-tools")
-public class SprintApiToolsProperties {
+public class SpringApiToolsProperties {
 
     private boolean enableDefaultPageable = false;
     private int listDefaultSize = 0;
     private boolean listDefaultSizeOverride = true;
+    private StringCaseSensitive stringCaseSensitive = StringCaseSensitive.none;
 
-    public SprintApiToolsProperties() {}
+    public SpringApiToolsProperties() {}
 
     public boolean isEnableDefaultPageable() {
         return enableDefaultPageable;
@@ -36,5 +37,12 @@ public class SprintApiToolsProperties {
     public void setListDefaultSizeOverride(boolean listDefaultSizeOverride) {
         this.listDefaultSizeOverride = listDefaultSizeOverride;
     }
-    
+
+    public StringCaseSensitive getStringCaseSensitive() {
+        return stringCaseSensitive;
+    }
+
+    public void setStringCaseSensitive(StringCaseSensitive stringCaseSensitive) {
+        this.stringCaseSensitive = stringCaseSensitive;
+    }
 }
