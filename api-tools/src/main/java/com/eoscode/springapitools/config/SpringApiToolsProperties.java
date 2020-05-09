@@ -11,6 +11,7 @@ public class SpringApiToolsProperties {
     private int listDefaultSize = 0;
     private boolean listDefaultSizeOverride = true;
     private StringCaseSensitive stringCaseSensitive = StringCaseSensitive.none;
+    private boolean queryWithJoinConfiguration = true;
 
     public SpringApiToolsProperties() {}
 
@@ -45,4 +46,13 @@ public class SpringApiToolsProperties {
     public void setStringCaseSensitive(StringCaseSensitive stringCaseSensitive) {
         this.stringCaseSensitive = stringCaseSensitive;
     }
+
+    public boolean isQueryWithJoinConfiguration() {
+        return queryWithJoinConfiguration;
+    }
+
+    public void setQueryWithJoinConfiguration(boolean queryWithJoinConfiguration) {
+        this.queryWithJoinConfiguration = queryWithJoinConfiguration;
+    }
+
 }
