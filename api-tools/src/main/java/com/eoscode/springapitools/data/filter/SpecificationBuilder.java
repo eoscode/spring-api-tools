@@ -4,10 +4,8 @@ import com.eoscode.springapitools.config.StringCaseSensitive;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawtypes", "unused", "MismatchedQueryAndUpdateOfCollection", "UnusedReturnValue"})
@@ -15,15 +13,18 @@ public class SpecificationBuilder<T> {
 
     private Boolean distinct;
     private final Map<String, List<FilterDefinition>> filters;
-    private final List<SortDefinition> sorts;
+    private final Set<SortDefinition> sorts;
+    private final Set<JoinDefinition> joins;
     private DefaultSpecification.Operator operator;
     private StringCaseSensitive stringCaseSensitive;
 
     private Specification<T> result = null;
+    private Map<String, Join> joinMap = new Hashtable<>();
 
     public SpecificationBuilder() {
         filters = new HashMap<>();
-        sorts = new ArrayList<>();
+        sorts = new HashSet<>();
+        joins = new HashSet<>();
         operator = DefaultSpecification.Operator.AND;
     }
 
@@ -60,7 +61,7 @@ public class SpecificationBuilder<T> {
     public SpecificationBuilder filter(FilterDefinition filter) {
         String[] fields = filter.getField().split("\\.");
         String path = "";
-        if (fields.length == 2) {
+        if (filter.isJoin()) {
             path = fields[0];
             filter.setField(fields[1]);
         }
@@ -74,6 +75,27 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder filters(List<FilterDefinition> filters) {
         filters.forEach(this::filter);
+        return this;
+    }
+
+    public SpecificationBuilder join(JoinDefinition joinDefinition) {
+        if (joinDefinition != null) {
+            this.joins.add(joinDefinition);
+        }
+        return this;
+    }
+
+    public SpecificationBuilder joins(JoinDefinition[] joinDefinitions) {
+        if (joins != null) {
+            this.joins.addAll(Arrays.asList(joinDefinitions));
+        }
+        return this;
+    }
+
+    public SpecificationBuilder joins(List<JoinDefinition> joinDefinitions) {
+        if (joins != null) {
+            this.joins.addAll(joinDefinitions);
+        }
         return this;
     }
 
@@ -96,6 +118,7 @@ public class SpecificationBuilder<T> {
 
     public Specification<T> build(QueryDefinition queryDefinition) {
         distinct(queryDefinition.isDistinct())
+                .joins(queryDefinition.getJoins())
                 .filters(queryDefinition.getFilters())
                 .sorts(queryDefinition.getSorts());
         if ("or".equalsIgnoreCase(DefaultSpecification.Operator.OR.getValue())) {
@@ -108,6 +131,19 @@ public class SpecificationBuilder<T> {
         if (filters.size() == 0) {
             return null;
         }
+
+        filters.forEach((key, filters) -> {
+            if (filters.size() > 0) {
+                filters.forEach(filterDefinition -> {
+                    if (filterDefinition.isFetch() || filterDefinition.isJoin()) {
+                        boolean isPresent = joins.stream().anyMatch(joinDefinition -> joinDefinition.getField().equals(key));
+                        if (!isPresent) {
+                            joins.add(new JoinDefinition(key, filterDefinition.isFetch()));
+                        }
+                    }
+                });
+            }
+        });
 
         filters.forEach((key, filters) -> {
             if (operator == DefaultSpecification.Operator.OR) {
@@ -136,10 +172,39 @@ public class SpecificationBuilder<T> {
                         })
                         .collect(Collectors.toList());
             } else {
-                final Join join = root.join(field, JoinType.LEFT);
+                AtomicReference<Join> joinReference = new AtomicReference<>();
+
+                Join join = joinMap.get(field);
+                if (join == null) {
+                    Optional<JoinDefinition> optional = joins.stream()
+                            .filter(joinDefinition -> joinDefinition.getField().equalsIgnoreCase(field))
+                            .findFirst();
+
+                    if (optional.isPresent()) {
+                        JoinDefinition joinDefinition = optional.get();
+
+                        JoinType joinType;
+                        if (joinDefinition.getType() == JoinDefinition.JoinType.INNER) {
+                            joinType = JoinType.INNER;
+                        } else {
+                            joinType = JoinType.LEFT;
+                        }
+
+                        if (joinDefinition.isFetch()) {
+                            join = (Join) root.fetch(field, joinType);
+                        } else {
+                            join = root.join(field, joinType);
+                        }
+                    } else {
+                        join = root.join(field, JoinType.LEFT);
+                    }
+                    joinMap.putIfAbsent(field, join);
+                }
+                joinReference.set(join);
+
                 specs = filters.stream()
                         .map(filterDefinition -> {
-                            DefaultSpecification defaultSpecification = new DefaultSpecification(join, filterDefinition);
+                            DefaultSpecification defaultSpecification = new DefaultSpecification(joinReference.get(), filterDefinition);
                             defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
                             return defaultSpecification;
                         })
