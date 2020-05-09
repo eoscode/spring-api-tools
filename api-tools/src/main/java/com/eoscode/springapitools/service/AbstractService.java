@@ -307,6 +307,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             criteria.forEach(builder::filter);
         }
 
+        if (queryDefinition.getJoins() != null) {
+            builder.joins(queryDefinition.getJoins());
+        }
+
         if ("or".equalsIgnoreCase(queryDefinition.getOperator())) {
             builder.withOr();
         }
@@ -508,6 +512,28 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         queryDefinition.setDistinct(queryParameter.isDistinct());
         queryDefinition.setFilters(criteria);
         queryDefinition.setOperator(queryParameter.getOperator());
+
+/*        if (queryParameter.getFetches() != null) {
+            for (String fetch: queryParameter.getFetches()) {
+                Optional<FilterDefinition> filter = criteria
+                        .stream()
+                        .filter(filterDefinition -> filterDefinition.getPathJoin().equals(fetch))
+                        .findFirst();
+                filter.ifPresent(filterDefinition -> filterDefinition.setFetch(true));
+            }
+        }*/
+
+        if (queryParameter.getFetches() != null) {
+            List<JoinDefinition> joinDefinitions = new ArrayList<>();
+            queryDefinition.setJoins(joinDefinitions);
+            for (String fetch: queryParameter.getFetches()) {
+                Optional<FilterDefinition> filter = criteria
+                        .stream()
+                        .filter(filterDefinition -> filterDefinition.isJoin() && filterDefinition.getPathJoin().equals(fetch))
+                        .findFirst();
+                filter.ifPresent(filterDefinition -> joinDefinitions.add(new JoinDefinition(fetch, true)));
+            }
+        }
 
         return queryDefinition;
     }

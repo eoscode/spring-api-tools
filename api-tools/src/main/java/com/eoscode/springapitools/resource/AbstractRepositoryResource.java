@@ -20,10 +20,9 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 	private ApplicationContext applicationContext;
 
 	private DefaultService<Repository, Entity, ID> defaultService;
-	private Type repositoryType;
-	private Type entityType;
-	private Type identifierType;
-
+	private final Type repositoryType;
+	private final Type entityType;
+	private final Type identifierType;
 
 	public AbstractRepositoryResource() {
 
