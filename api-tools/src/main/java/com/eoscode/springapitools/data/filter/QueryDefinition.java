@@ -7,6 +7,7 @@ public class QueryDefinition {
     private Boolean distinct;
     private List<FilterDefinition> filters;
     private List<SortDefinition> sorts;
+    private List<JoinDefinition> joins;
     private String operator;
 
     public QueryDefinition() {}
@@ -28,6 +29,14 @@ public class QueryDefinition {
 
     public void setFilters(List<FilterDefinition> filters) {
         this.filters = filters;
+    }
+
+    public List<JoinDefinition> getJoins() {
+        return joins;
+    }
+
+    public void setJoins(List<JoinDefinition> joins) {
+        this.joins = joins;
     }
 
     public List<SortDefinition> getSorts() {

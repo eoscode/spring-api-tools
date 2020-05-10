@@ -20,7 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -47,8 +46,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Autowired
     private SpringApiToolsProperties springApiToolsProperties;
-
-    private EntityManager entityManager;
 
     private Repository repository;
 
@@ -304,7 +301,17 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         builder.withStringIgnoreCase(springApiToolsProperties.getStringCaseSensitive());
 
         if (queryDefinition.getFilters() != null) {
-            criteria.forEach(builder::filter);
+            criteria.forEach(filterDefinition -> {
+                if (!springApiToolsProperties.isQueryWithJoinConfiguration() && filterDefinition.isFetch()) {
+                    log.debug(String.format("getDefaultSpecification: disable fetch configuration for '%s'", filterDefinition.getField()));
+                    filterDefinition.setFetch(false);
+                }
+                builder.filter(filterDefinition);
+            });
+        }
+
+        if (springApiToolsProperties.isQueryWithJoinConfiguration() && queryDefinition.getJoins() != null) {
+            builder.joins(queryDefinition.getJoins());
         }
 
         if ("or".equalsIgnoreCase(queryDefinition.getOperator())) {
@@ -508,6 +515,14 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         queryDefinition.setDistinct(queryParameter.isDistinct());
         queryDefinition.setFilters(criteria);
         queryDefinition.setOperator(queryParameter.getOperator());
+
+        if (springApiToolsProperties.isQueryWithJoinConfiguration() && queryParameter.getFetches() != null) {
+            List<JoinDefinition> joinDefinitions = new ArrayList<>();
+            queryDefinition.setJoins(joinDefinitions);
+            for (String fetch: queryParameter.getFetches()) {
+                joinDefinitions.add(new JoinDefinition(fetch, true));
+            }
+        }
 
         return queryDefinition;
     }
