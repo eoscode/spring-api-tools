@@ -19,7 +19,7 @@ public class SpecificationBuilder<T> {
     private StringCaseSensitive stringCaseSensitive;
 
     private Specification<T> result = null;
-    private Map<String, Join> joinMap = new Hashtable<>();
+    private final Map<String, Join> joinMap = new Hashtable<>();
 
     public SpecificationBuilder() {
         filters = new HashMap<>();

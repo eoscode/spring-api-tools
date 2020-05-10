@@ -301,10 +301,16 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         builder.withStringIgnoreCase(springApiToolsProperties.getStringCaseSensitive());
 
         if (queryDefinition.getFilters() != null) {
-            criteria.forEach(builder::filter);
+            criteria.forEach(filterDefinition -> {
+                if (!springApiToolsProperties.isQueryWithJoinConfiguration() && filterDefinition.isFetch()) {
+                    log.debug(String.format("getDefaultSpecification: disable fetch configuration for '%s'", filterDefinition.getField()));
+                    filterDefinition.setFetch(false);
+                }
+                builder.filter(filterDefinition);
+            });
         }
 
-        if (queryDefinition.getJoins() != null) {
+        if (springApiToolsProperties.isQueryWithJoinConfiguration() && queryDefinition.getJoins() != null) {
             builder.joins(queryDefinition.getJoins());
         }
 
@@ -510,7 +516,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         queryDefinition.setFilters(criteria);
         queryDefinition.setOperator(queryParameter.getOperator());
 
-        if (queryParameter.getFetches() != null) {
+        if (springApiToolsProperties.isQueryWithJoinConfiguration() && queryParameter.getFetches() != null) {
             List<JoinDefinition> joinDefinitions = new ArrayList<>();
             queryDefinition.setJoins(joinDefinitions);
             for (String fetch: queryParameter.getFetches()) {
