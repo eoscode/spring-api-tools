@@ -20,7 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -47,8 +46,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Autowired
     private SpringApiToolsProperties springApiToolsProperties;
-
-    private EntityManager entityManager;
 
     private Repository repository;
 
@@ -512,16 +509,6 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         queryDefinition.setDistinct(queryParameter.isDistinct());
         queryDefinition.setFilters(criteria);
         queryDefinition.setOperator(queryParameter.getOperator());
-
-/*        if (queryParameter.getFetches() != null) {
-            for (String fetch: queryParameter.getFetches()) {
-                Optional<FilterDefinition> filter = criteria
-                        .stream()
-                        .filter(filterDefinition -> filterDefinition.getPathJoin().equals(fetch))
-                        .findFirst();
-                filter.ifPresent(filterDefinition -> filterDefinition.setFetch(true));
-            }
-        }*/
 
         if (queryParameter.getFetches() != null) {
             List<JoinDefinition> joinDefinitions = new ArrayList<>();

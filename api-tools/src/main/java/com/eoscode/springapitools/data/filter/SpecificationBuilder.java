@@ -162,6 +162,10 @@ public class SpecificationBuilder<T> {
                 query.distinct(distinct);
             }
 
+            if (currentQueryIsCountRecords(query)) {
+                joinMap.clear();
+            }
+
             List<Specification> specs;
             if ("".equals(field)) {
                 specs = filters.stream()
@@ -180,7 +184,7 @@ public class SpecificationBuilder<T> {
                             .filter(joinDefinition -> joinDefinition.getField().equalsIgnoreCase(field))
                             .findFirst();
 
-                    if (optional.isPresent()) {
+                    if (!currentQueryIsCountRecords(query) && optional.isPresent()) {
                         JoinDefinition joinDefinition = optional.get();
 
                         JoinType joinType;
@@ -231,6 +235,10 @@ public class SpecificationBuilder<T> {
                         ((DefaultSpecification) item).getOriginalFieldName()));
             }
         }).toArray(Predicate[]::new);
+    }
+
+    private boolean currentQueryIsCountRecords(CriteriaQuery<?> criteriaQuery) {
+        return criteriaQuery.getResultType() == Long.class || criteriaQuery.getResultType() == long.class;
     }
 
 }

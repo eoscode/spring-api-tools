@@ -1,6 +1,8 @@
 package com.eoscode.springapitools.data.filter;
 
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 public class FilterDefinition {
     private String field;
     private String operator;
@@ -36,6 +38,7 @@ public class FilterDefinition {
         return field;
     }
 
+    @JsonSetter
     public void setField(String field) {
         this.field = field;
         defineJoin(field);
