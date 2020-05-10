@@ -13,11 +13,12 @@
  * Suporte a NoDelete annotation, para gerenciar delete lógico. 
  * Suporte a Find e FindAttribute annotation para configurar filtros.
  * Configuração básica para exception handler, através de @RestControllerAdvice.
- * Suporte a query nos resources sem a implementação de código. Resource {path}/query, através de método GET e POST 
+ * Suporte a query nos resources sem a implementação de código. Resource {path}/query, através de método GET e POST. 
+ * Consultas com configuração de join e fecth de forma dinâmica e sem codificação.
  
 ## Como utilizar
 
-Para começar, devemos configurar o Spring para carregar as configurações do `Spring-API-Tools`. 
+Configure o Spring para carregar as configurações do `Spring-API-Tools`. 
 
 ### Dependência
 ```xml
