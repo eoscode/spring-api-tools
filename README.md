@@ -24,7 +24,7 @@ Para começar, devemos configurar o Spring para carregar as configurações do `
 <dependency>
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.1.0-RELEASE</version>
+    <version>1.2.0-RELEASE</version>
 </dependency>
 ```
 
