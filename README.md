@@ -372,15 +372,14 @@ spring-api-tools:
 ### Join e Fetch
 
 As consultas suportam configuração automática de join, baseada na sintaxe `atributo.atributo`, onde a primeira ocorrência,
-indica o atributo da Entidade consultada e mapeada no JPA com OneToMany, ManyToMany ou ManyToOne. A segunda ocorrência, 
-o atributo da classe que foi associada ao mapeamento e que será aplicado o filtro.
-
-Sendo assim, quando realizamos filtros utilizando essa sintaxe, é realizado um left outer join de forma automática, possibilitando 
+indica o atributo da Entidade consultada e mapeada no JPA com OneToMany, ManyToMany ou ManyToOne. 
+A segunda ocorrência, o atributo da classe que foi associada ao mapeamento e que será aplicado o filtro. Sendo assim, quando realizamos 
+filtros utilizando essa sintaxe, é realizado um left outer join de forma automática, possibilitando 
 consultas com um nível de profundidade.
 
-Para indicar que a consulta deve retornar os dados da associação `join`, é possível utilizar o parâmetro `fetches` nas 
-consultas com método **GET**, onde se espera uma lista com o nome dos atributos que representam as associações. Ou o parâmetro 
-`fetch`, introduzido no filtro das consultas com método **POST**.
+Para indicar que a consulta deve retornar os dados da associação `join`, é possível utilizar o parâmetro `fetches` nas consultas com método 
+**GET**, onde se espera uma lista com o nome dos atributos que representam as associações. Ou o parâmetro `fetch`, introduzido 
+no filtro das consultas com método **POST**.
 
 As consultas realizadas com mensagens do tipo `json` e método **POST** são mais flexíveis, em relação à configuração do join,
 uma vez que permitem indicar se o join será do tipo `inner outer join` ou `left outer join` (default), além de uma configuração 
