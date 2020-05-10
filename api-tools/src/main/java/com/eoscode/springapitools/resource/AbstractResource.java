@@ -39,10 +39,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	private Service service;
 
-	private Type serviceType;
-	private Type entityType;
-	private Type identifierType;
-	private Class<Entity> entityClass;
+	private final Type serviceType;
+	private final Type entityType;
+	private final Type identifierType;
+	private final Class<Entity> entityClass;
 
 	public AbstractResource() {
 		Type type = getClass().getGenericSuperclass();

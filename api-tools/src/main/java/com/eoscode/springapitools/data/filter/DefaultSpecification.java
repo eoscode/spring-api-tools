@@ -42,7 +42,7 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
     @SuppressWarnings("unchecked")
     private Predicate build(FilterDefinition criteria, Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
         Path path;
-        if (join != null) {
+       if (join != null) {
             path = join.get(criteria.getField());
         } else {
             path = root.get(criteria.getField());
@@ -51,56 +51,56 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
         Class<?> javaType = path.getJavaType();
 
         if (criteria.getOperator().equalsIgnoreCase(Operator.EQ.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.equal(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.equal(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.NE.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.notEqual(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.notEqual(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.GT.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.greaterThan(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.greaterThan(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.GTE.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.greaterThanOrEqualTo(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.greaterThanOrEqualTo(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.LT.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.lessThan(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.lessThan(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.LTE.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.lessThanOrEqualTo(getStringIgnoreCase(criteriaBuilder, path),
                         (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             } else {
                 return criteriaBuilder.lessThanOrEqualTo(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.LIKE.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.like(getStringIgnoreCase(criteriaBuilder, path),
                         "%" + ObjectUtils.getObject(javaType, criteria.getValue()) + "%");
             } else {
                 return criteriaBuilder.equal(path, (Comparable) ObjectUtils.getObject(javaType, criteria.getValue()));
             }
         } else if (criteria.getOperator().equalsIgnoreCase(Operator.NOT_LIKE.getValue())) {
-            if (root.get(criteria.getField()).getJavaType() == String.class) {
+            if (path.getJavaType() == String.class) {
                 return criteriaBuilder.notLike(getStringIgnoreCase(criteriaBuilder, path),
                         "%" + ObjectUtils.getObject(javaType, criteria.getValue()) + "%");
             } else {

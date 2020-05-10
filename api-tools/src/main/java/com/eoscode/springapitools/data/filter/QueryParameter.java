@@ -6,6 +6,7 @@ public class QueryParameter {
     private String operator = "and";
     private Boolean pageable = null;
     private String[] filters = null;
+    private String[] fetches = null;
     private Integer size = null;
 
     public QueryParameter() {}
@@ -49,4 +50,13 @@ public class QueryParameter {
     public void setSize(Integer size) {
         this.size = size;
     }
+
+    public void setFetches(String[] fetches) {
+        this.fetches = fetches;
+    }
+
+    public String[] getFetches() {
+        return fetches;
+    }
+
 }

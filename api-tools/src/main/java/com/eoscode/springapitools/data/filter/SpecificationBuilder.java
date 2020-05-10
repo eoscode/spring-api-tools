@@ -4,26 +4,27 @@ import com.eoscode.springapitools.config.StringCaseSensitive;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawtypes", "unused", "MismatchedQueryAndUpdateOfCollection", "UnusedReturnValue"})
 public class SpecificationBuilder<T> {
 
     private Boolean distinct;
-    private final Map<String, List<FilterDefinition>> filters;
-    private final List<SortDefinition> sorts;
+    //private final Map<String, List<FilterDefinition>> filters;
+    private final List<FilterDefinition> filters;
+    private final Set<SortDefinition> sorts;
+    private final Set<JoinDefinition> joins;
     private DefaultSpecification.Operator operator;
     private StringCaseSensitive stringCaseSensitive;
 
     private Specification<T> result = null;
+    private final Map<String, Join> joinMap = new Hashtable<>();
 
     public SpecificationBuilder() {
-        filters = new HashMap<>();
-        sorts = new ArrayList<>();
+        filters = new ArrayList<>();
+        sorts = new HashSet<>();
+        joins = new HashSet<>();
         operator = DefaultSpecification.Operator.AND;
     }
 
@@ -59,21 +60,36 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder filter(FilterDefinition filter) {
         String[] fields = filter.getField().split("\\.");
-        String path = "";
-        if (fields.length == 2) {
-            path = fields[0];
+        if (filter.isJoin()) {
             filter.setField(fields[1]);
         }
-
-        List<FilterDefinition> filters = this.filters.computeIfAbsent(path, k -> new ArrayList<>());
         filters.add(filter);
-        this.filters.put(path, filters);
-
         return this;
     }
 
     public SpecificationBuilder filters(List<FilterDefinition> filters) {
         filters.forEach(this::filter);
+        return this;
+    }
+
+    public SpecificationBuilder join(JoinDefinition joinDefinition) {
+        if (joinDefinition != null) {
+            this.joins.add(joinDefinition);
+        }
+        return this;
+    }
+
+    public SpecificationBuilder joins(JoinDefinition[] joinDefinitions) {
+        if (joins != null) {
+            this.joins.addAll(Arrays.asList(joinDefinitions));
+        }
+        return this;
+    }
+
+    public SpecificationBuilder joins(List<JoinDefinition> joinDefinitions) {
+        if (joins != null) {
+            this.joins.addAll(joinDefinitions);
+        }
         return this;
     }
 
@@ -96,6 +112,7 @@ public class SpecificationBuilder<T> {
 
     public Specification<T> build(QueryDefinition queryDefinition) {
         distinct(queryDefinition.isDistinct())
+                .joins(queryDefinition.getJoins())
                 .filters(queryDefinition.getFilters())
                 .sorts(queryDefinition.getSorts());
         if ("or".equalsIgnoreCase(DefaultSpecification.Operator.OR.getValue())) {
@@ -105,46 +122,65 @@ public class SpecificationBuilder<T> {
     }
 
     public Specification<T> build() {
-        if (filters.size() == 0) {
-            return null;
-        }
+        filters.forEach(filterDefinition -> {
+                if (filterDefinition.isFetch() || filterDefinition.isJoin()) {
+                    boolean isPresent = joins.stream().anyMatch(joinDefinition -> joinDefinition.getField().equals(filterDefinition.getPathJoin()));
+                    if (!isPresent) {
+                        joins.add(new JoinDefinition(filterDefinition.getPathJoin(), filterDefinition.isFetch()));
+                    }
+                }
+            });
 
-        filters.forEach((key, filters) -> {
             if (operator == DefaultSpecification.Operator.OR) {
-                result = Specification.where(result).or(where(key, filters));
+                result = Specification.where(result).or(joinAndWhere(joins, filters));
             } else {
-                result = Specification.where(result).and(where(key, filters));
+                result = Specification.where(result).and(joinAndWhere(joins, filters));
             }
-        });
 
         return result;
     }
 
-    Specification<T> where(String field, List<FilterDefinition> filters) {
+    Specification<T> joinAndWhere(Set<JoinDefinition> joins, List<FilterDefinition> filters) {
         return (root, query, builder) -> {
             if (distinct != null) {
                 query.distinct(distinct);
             }
 
-            List<Specification> specs;
-            if ("".equals(field)) {
-                specs = filters.stream()
-                        .map(filterDefinition -> {
-                            DefaultSpecification defaultSpecification = new DefaultSpecification(filterDefinition);
-                            defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
-                            return defaultSpecification;
-                        })
-                        .collect(Collectors.toList());
-            } else {
-                final Join join = root.join(field, JoinType.LEFT);
-                specs = filters.stream()
-                        .map(filterDefinition -> {
+            if (currentQueryIsCountRecords(query)) {
+                joinMap.clear();
+            }
+
+            joins.forEach(joinDefinition -> {
+                Join join;
+                JoinType joinType;
+                if (joinDefinition.getType() == JoinDefinition.JoinType.INNER) {
+                    joinType = JoinType.INNER;
+                } else {
+                    joinType = JoinType.LEFT;
+                }
+
+                if (!currentQueryIsCountRecords(query) && joinDefinition.isFetch()) {
+                    join = (Join) root.fetch(joinDefinition.getField(), joinType);
+                } else {
+                    join = root.join(joinDefinition.getField(), joinType);
+                }
+                joinMap.putIfAbsent(joinDefinition.getField(), join);
+            });
+
+            List<Specification> specs = filters.stream()
+                    .map(filterDefinition -> {
+                        if (filterDefinition.isJoin()) {
+                            Join join = joinMap.get(filterDefinition.getPathJoin());
                             DefaultSpecification defaultSpecification = new DefaultSpecification(join, filterDefinition);
                             defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
                             return defaultSpecification;
-                        })
-                        .collect(Collectors.toList());
-            }
+                        } else {
+                            DefaultSpecification defaultSpecification = new DefaultSpecification(filterDefinition);
+                            defaultSpecification.withStringIgnoreCase(stringCaseSensitive);
+                            return defaultSpecification;
+                        }
+                    })
+                .collect(Collectors.toList());
 
             Predicate[] predicates = build(specs, root, query, builder);
             if (operator == DefaultSpecification.Operator.OR) {
@@ -153,6 +189,10 @@ public class SpecificationBuilder<T> {
                 return builder.and(predicates);
             }
         };
+    }
+
+    public void prepareJoins(Set<JoinDefinition> joins, Root root, CriteriaQuery query, CriteriaBuilder builder) {
+
     }
 
     @SuppressWarnings("unchecked")
@@ -166,6 +206,10 @@ public class SpecificationBuilder<T> {
                         ((DefaultSpecification) item).getOriginalFieldName()));
             }
         }).toArray(Predicate[]::new);
+    }
+
+    private boolean currentQueryIsCountRecords(CriteriaQuery<?> criteriaQuery) {
+        return criteriaQuery.getResultType() == Long.class || criteriaQuery.getResultType() == long.class;
     }
 
 }
