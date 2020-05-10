@@ -520,11 +520,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
             List<JoinDefinition> joinDefinitions = new ArrayList<>();
             queryDefinition.setJoins(joinDefinitions);
             for (String fetch: queryParameter.getFetches()) {
-                Optional<FilterDefinition> filter = criteria
-                        .stream()
-                        .filter(filterDefinition -> filterDefinition.isJoin() && filterDefinition.getPathJoin().equals(fetch))
-                        .findFirst();
-                filter.ifPresent(filterDefinition -> joinDefinitions.add(new JoinDefinition(fetch, true)));
+                joinDefinitions.add(new JoinDefinition(fetch, true));
             }
         }
 
