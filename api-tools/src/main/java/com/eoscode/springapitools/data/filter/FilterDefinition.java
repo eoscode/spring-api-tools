@@ -10,7 +10,9 @@ public class FilterDefinition {
     private boolean fetch;
 
     private boolean join;
-    private String pathJoin;
+    private String pathJoin = "";
+
+    private int order;
 
     public FilterDefinition() {}
 
@@ -74,6 +76,14 @@ public class FilterDefinition {
 
     public String getPathJoin() {
         return pathJoin;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    protected void setOrder(int order) {
+        this.order = order;
     }
 
 }
