@@ -210,14 +210,14 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@PostMapping("/query/page")
-	public ResponseEntity<Page<Entity>> queryWitPage(@RequestBody QueryDefinition queryDefinition,
+	public ResponseEntity<Page<Entity>> queryWitPage(@RequestBody(required = false) QueryDefinition queryDefinition,
 					   @PageableDefault Pageable pageable) {
 		Page<Entity> result = getService().query(queryDefinition, pageable);
 		return ResponseEntity.ok(result);
 	}
 
 	@PostMapping("/query")
-	public <T> T query(@RequestBody QueryDefinition queryDefinition,
+	public <T> T query(@RequestBody(required = false) QueryDefinition queryDefinition,
 											  @RequestParam(value = "pageable", required = false) Boolean page,
 											  @PageableDefault Pageable pageable) {
 		T result;
