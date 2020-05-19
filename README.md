@@ -374,8 +374,8 @@ spring-api-tools:
 
 As consultas suportam configuração automática de join, baseada na sintaxe `atributo.atributo`, onde a primeira ocorrência,
 indica o atributo da Entidade consultada e mapeada no JPA com OneToMany, ManyToMany ou ManyToOne. 
-A segunda ocorrência, o atributo da classe que foi associada ao mapeamento e que será aplicado o filtro. Sendo assim, quando realizamos 
-filtros utilizando essa sintaxe, é realizado um left outer join de forma automática, possibilitando 
+A segunda ocorrência, o atributo da classe que foi associada ao mapeamento e que será aplicado o filtro. 
+Sendo assim, quando realizamos filtros utilizando essa sintaxe, é realizado um left outer join de forma automática, possibilitando 
 consultas com um nível de profundidade.
 
 Para indicar que a consulta deve retornar os dados da associação `join`, é possível utilizar o parâmetro `fetches` nas consultas com método 
@@ -419,7 +419,7 @@ ou
   "joins": [
     {
      "field": "state",
-     "fetch": "pe"
+     "fetch": "true"
     }
   ]
 }
