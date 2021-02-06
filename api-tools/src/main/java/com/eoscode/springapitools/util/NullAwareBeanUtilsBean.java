@@ -8,9 +8,7 @@ public class NullAwareBeanUtilsBean extends BeanUtilsBean {
 	
 	private static NullAwareBeanUtilsBean instance;
 
-	private NullAwareBeanUtilsBean() {
-
-	}
+	private NullAwareBeanUtilsBean() { }
 	
 	public static NullAwareBeanUtilsBean getInstance() {
 		if (instance == null) {

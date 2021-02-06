@@ -14,9 +14,9 @@ public class ObjectUtils {
     @SuppressWarnings("unchecked")
     public static <T> T getObject(Class<?> type, String value) {
         if (type == Integer.class || type == int.class) {
-            return (T) new Integer(value);
+            return (T) Integer.valueOf(value);
         } else if (type == Long.class || type == long.class) {
-            return (T) new Long((value));
+            return (T) Long.valueOf(value);
         } else if (type == Boolean.class || type == boolean.class) {
             if ("true".equalsIgnoreCase(value) || "1".equalsIgnoreCase(value)) {
                 return (T) Boolean.TRUE;

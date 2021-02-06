@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 public class DefaultService<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID>
         extends AbstractService<Repository, Entity, ID> {
 
-    private Repository repository;
+    private final Repository repository;
 
     public DefaultService(ApplicationContext applicationContext, Type repositoryType, Type entityType, Type identifierType) {
         super(applicationContext, repositoryType, entityType, identifierType);
