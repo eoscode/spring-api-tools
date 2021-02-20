@@ -5,6 +5,7 @@ import java.util.List;
 public class QueryDefinition {
 
     private Boolean distinct;
+    private List<String> views;
     private List<FilterDefinition> filters;
     private List<SortDefinition> sorts;
     private List<JoinDefinition> joins;
@@ -21,6 +22,14 @@ public class QueryDefinition {
 
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
+    }
+
+    public List<String> getViews() {
+        return views;
+    }
+
+    public void setViews(List<String> views) {
+        this.views = views;
     }
 
     public List<FilterDefinition> getFilters() {
