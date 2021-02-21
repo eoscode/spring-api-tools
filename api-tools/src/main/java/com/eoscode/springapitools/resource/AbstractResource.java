@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings({"Duplicates", "unchecked"})
 public abstract class AbstractResource<Service extends AbstractService<?, Entity, ID>, Entity, ID> {
@@ -195,24 +194,33 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@GetMapping(value = "/query/page", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<Entity>> queryWithPage(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
+	public <T> T queryWithPage(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
+													  @RequestParam(value = "views", required = false, defaultValue = "") List<String> views,
 													  @PageableDefault Pageable pageable,
 													  QueryParameter queryParameter) {
-		Page<Entity> list = getService().query(query, queryParameter, pageable);
-		return ResponseEntity.ok(list);
+
+		queryParameter.setPageable(true); //force pageable
+		T result = query(query, views, pageable, queryParameter);
+
+		return (T) ResponseEntity.ok(result);
 	}
 
 	@GetMapping(value = "/query", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T query(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
+					   @RequestParam(value = "views", required = false, defaultValue = "") List<String> views,
 					   @PageableDefault Pageable pageable,
 					   QueryParameter queryParameter) {
+
+		QueryDefinition queryDefinition = getService().createQueryDefinition(query, queryParameter);
+		queryDefinition.setViews(views);
+
 		T result;
 		if (isDefaultPageable(queryParameter.getPageable())) {
-			result = (T) getService().query(query, queryParameter, pageable);
+			result = query(queryDefinition, queryParameter.getPageable(), pageable);
 		} else {
 			int maxSize = getListDefaultSize(queryParameter.getSize());
 			if (maxSize > 0) {
-				Page<Entity> page = getService().query(query, queryParameter, PageRequest.of(0, maxSize, pageable.getSort()));
+				Page<Entity> page = query(queryDefinition, queryParameter.getPageable(), PageRequest.of(0, maxSize, pageable.getSort()));
 				result = (T) page.getContent();
 				if (page.getTotalElements() > maxSize) {
 					log.warn(String.format("list truncated, %d occurrence of %d. rule list-default-size=%d," +
@@ -220,10 +228,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 							maxSize, page.getTotalElements(), maxSize, springApiToolsProperties.isListDefaultSizeOverride()));
 				}
 			} else {
-				result = (T) getService().query(query, queryParameter, pageable.getSort());
+				result = query(queryDefinition, false, pageable);
 			}
 		}
-		return (T) ResponseEntity.ok(result);
+
+		return result;
 	}
 
 	@PostMapping(value = "/query/page", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -319,6 +328,9 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				});
 			}
 
+			/*
+				remove views with @JsonIgnore and without fetch definition in FilterDefinition or JoinDefinition
+			 */
 			views = views.stream()
 					.filter(view -> {
 						int idx = view.indexOf(".");
