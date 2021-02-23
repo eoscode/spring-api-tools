@@ -345,22 +345,32 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 							return true;
 						} else {
 							try {
+								boolean dynamicView;
 								String fieldName = view.substring(0, idx);
 								Field field = entityClass.getDeclaredField(fieldName);
 								if (field.getGenericType() instanceof ParameterizedType) {
 									ParameterizedType pType = (ParameterizedType) field.getGenericType();
-									field = ((Class<?>) pType.getActualTypeArguments()[0])
-											.getDeclaredField(view.substring(idx + 1));
+									Class<?> type = ((Class<?>) pType.getActualTypeArguments()[0]);
+									dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
+										|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
+											&& type.isAnnotationPresent(DynamicView.class));
+
+									field = type.getDeclaredField(view.substring(idx + 1));
 								} else {
+									dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
+											|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
+											&& field.getType().isAnnotationPresent(DynamicView.class));
+
 									field = field.getType().getDeclaredField(view.substring(idx + 1));
 								}
 
 								boolean fieldWithJsonIgnore = field.isAnnotationPresent(JsonIgnore.class);
 								boolean fieldWithFetch = fetches.contains(fieldName);
-								boolean showField = !fieldWithJsonIgnore && fieldWithFetch;
+								boolean showField = !fieldWithJsonIgnore && fieldWithFetch && dynamicView;
 								if (!showField) {
-									log.debug(String.format("ignore field %s to query view in entity %s. annotation JsonIgnore: %s, fetch: %s",
-											view, entityClass.getName(), fieldWithJsonIgnore, fieldWithFetch));
+									log.debug(String.format("ignore field %s to query view in entity %s." +
+													" annotation JsonIgnore: %s, fetch: %s, dynamicView: %s",
+											view, entityClass.getName(), fieldWithJsonIgnore, fieldWithFetch, dynamicView));
 								}
 								return showField;
 							} catch (NoSuchFieldException e) {
