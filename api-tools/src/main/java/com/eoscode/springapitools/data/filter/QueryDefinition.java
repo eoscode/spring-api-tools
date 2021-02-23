@@ -1,14 +1,15 @@
 package com.eoscode.springapitools.data.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueryDefinition {
 
     private Boolean distinct;
-    private List<String> views;
-    private List<FilterDefinition> filters;
-    private List<SortDefinition> sorts;
-    private List<JoinDefinition> joins;
+    private List<String> views = new ArrayList<>();
+    private List<FilterDefinition> filters = new ArrayList<>();
+    private List<SortDefinition> sorts = new ArrayList<>();
+    private List<JoinDefinition> joins = new ArrayList<>();
     private String operator;
 
     public QueryDefinition() {}

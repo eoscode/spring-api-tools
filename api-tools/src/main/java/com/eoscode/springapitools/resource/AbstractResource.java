@@ -1,6 +1,8 @@
 package com.eoscode.springapitools.resource;
 
+import com.eoscode.springapitools.config.QueryView;
 import com.eoscode.springapitools.config.SpringApiToolsProperties;
+import com.eoscode.springapitools.data.domain.DynamicView;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
@@ -8,6 +10,8 @@ import com.eoscode.springapitools.service.AbstractService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.monitorjbl.json.JsonView;
 import com.monitorjbl.json.Match;
 import org.apache.commons.logging.Log;
@@ -15,10 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.reflections.ReflectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
@@ -59,6 +60,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	private final Type entityType;
 	private final Type identifierType;
 	private final Class<Entity> entityClass;
+	private boolean queryWithViews = false;
 
 	public AbstractResource() {
 		Type type = getClass().getGenericSuperclass();
@@ -68,7 +70,6 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		entityType =  pType.getActualTypeArguments()[1];
 		identifierType = pType.getActualTypeArguments()[2];
 		entityClass = (Class<Entity>) entityType;
-
 	}
 
 	@PostConstruct
@@ -80,6 +81,13 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 					service = applicationContext.getBean(serviceClass);
 				}
 			}
+		}
+		if (springApiToolsProperties.getQueryWithViews() == QueryView.all) {
+			queryWithViews = true;
+		} else if (springApiToolsProperties.getQueryWithViews() == QueryView.entity) {
+			queryWithViews = entityClass.isAnnotationPresent(DynamicView.class);
+		} else if (springApiToolsProperties.getQueryWithViews() == QueryView.none) {
+			queryWithViews = false;
 		}
 	}
 
@@ -198,7 +206,6 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 													  @RequestParam(value = "views", required = false, defaultValue = "") List<String> views,
 													  @PageableDefault Pageable pageable,
 													  QueryParameter queryParameter) {
-
 		queryParameter.setPageable(true); //force pageable
 		T result = query(query, views, pageable, queryParameter);
 
@@ -240,8 +247,8 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 					   @PageableDefault Pageable pageable) {
 		T result = (T) getService().query(queryDefinition, pageable);
 
-		if (queryDefinition.getViews() != null && !queryDefinition.getViews().isEmpty()) {
-			return (T) ResponseEntity.ok(getJsonViewSerialized(queryDefinition, result));
+		if (queryWithViews && !queryDefinition.getViews().isEmpty()) {
+			return (T) ResponseEntity.ok(getJsonView(queryDefinition, result));
 		} else {
 			return (T) ResponseEntity.ok(result);
 		}
@@ -258,8 +265,8 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			result = (T) getService().query(queryDefinition, pageable.getSort());
 		}
 
-		if (queryDefinition.getViews() != null && !queryDefinition.getViews().isEmpty()) {
-			return (T) ResponseEntity.ok(getJsonViewSerialized(queryDefinition, result));
+		if (queryWithViews && !queryDefinition.getViews().isEmpty()) {
+			return (T) ResponseEntity.ok(getJsonView(queryDefinition, result));
 		} else {
 			return (T) ResponseEntity.ok(result);
 		}
@@ -291,7 +298,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		return springApiToolsProperties.getListDefaultSize();
 	}
 
-	private <T> String getJsonViewSerialized(QueryDefinition queryDefinition, T result) {
+	private <T> String getJsonView(QueryDefinition queryDefinition, T result) {
 		List<String> views = queryDefinition.getViews();
 		try {
 			Set<Field> ignoreAnnotations = ReflectionUtils.getAllFields(entityClass,
@@ -348,12 +355,12 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 									field = field.getType().getDeclaredField(view.substring(idx + 1));
 								}
 
-								boolean jsonIgnoreAnnotation = field.isAnnotationPresent(JsonIgnore.class);
-								boolean jsonFetch = fetches.contains(fieldName);
-								boolean showField = !jsonIgnoreAnnotation && jsonFetch;
+								boolean fieldWithJsonIgnore = field.isAnnotationPresent(JsonIgnore.class);
+								boolean fieldWithFetch = fetches.contains(fieldName);
+								boolean showField = !fieldWithJsonIgnore && fieldWithFetch;
 								if (!showField) {
 									log.debug(String.format("ignore field %s to query view in entity %s. annotation JsonIgnore: %s, fetch: %s",
-											view, entityClass.getName(), jsonIgnoreAnnotation, jsonFetch));
+											view, entityClass.getName(), fieldWithJsonIgnore, fieldWithFetch));
 								}
 								return showField;
 							} catch (NoSuchFieldException e) {
@@ -364,16 +371,37 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 						}
 					}).collect(Collectors.toList());
 
-			JsonView<?> jsonView = JsonView.with(result)
-					.onClass(entityClass,
-							Match.match()
-									.exclude("*")
-									.include(views.toArray(new String[0])));
-
-			return jackson2HttpMessageConverter
+			ObjectMapper objectMapper = jackson2HttpMessageConverter
 					.getObjectMapper()
-					.copy()
-					.writeValueAsString(jsonView);
+					.copy();
+
+			if (result instanceof Page) {
+				Page<Entity> page = (Page<Entity>) result;
+				List<Entity> content = page.getContent();
+				page = new PageImpl<>(new ArrayList<>(), page.getPageable(), page.getTotalElements());
+
+				ObjectNode rootNode = objectMapper.createObjectNode();
+				JsonView<?> jsonView = JsonView.with(content)
+						.onClass(entityClass,
+								Match.match()
+										.exclude("*")
+										.include(views.toArray(new String[0])));
+				rootNode.putPOJO("content", jsonView);
+				rootNode.putPOJO("pageable", page.getPageable());
+				rootNode.put("total", page.getTotalElements());
+
+				return objectMapper
+						.writeValueAsString(rootNode);
+
+			} else {
+				JsonView<?> jsonView = JsonView.with(result)
+						.onClass(entityClass,
+								Match.match()
+										.exclude("*")
+										.include(views.toArray(new String[0])));
+
+				return objectMapper.writeValueAsString(jsonView);
+			}
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
