@@ -12,6 +12,7 @@ public class SpringApiToolsProperties {
     private boolean listDefaultSizeOverride = true;
     private StringCaseSensitive stringCaseSensitive = StringCaseSensitive.none;
     private boolean queryWithJoinConfiguration = true;
+    private QueryView queryWithViews = QueryView.all;
 
     public SpringApiToolsProperties() {}
 
@@ -53,6 +54,14 @@ public class SpringApiToolsProperties {
 
     public void setQueryWithJoinConfiguration(boolean queryWithJoinConfiguration) {
         this.queryWithJoinConfiguration = queryWithJoinConfiguration;
+    }
+
+    public QueryView getQueryWithViews() {
+        return queryWithViews;
+    }
+
+    public void setQueryWithViews(QueryView queryWithViews) {
+        this.queryWithViews = queryWithViews;
     }
 
 }

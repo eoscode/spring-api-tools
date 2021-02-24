@@ -19,4 +19,4 @@ spring-api-tools:
   enable-default-pageable: false
   string-case-sensitive: lowercase
   query-with-join-configuration: true
-
+  query-with-views: all
