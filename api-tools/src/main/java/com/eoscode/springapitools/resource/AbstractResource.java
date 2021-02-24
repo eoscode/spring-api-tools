@@ -6,6 +6,7 @@ import com.eoscode.springapitools.data.domain.DynamicView;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
+import com.eoscode.springapitools.data.filter.ViewDefinition;
 import com.eoscode.springapitools.service.AbstractService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -130,15 +131,19 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	}
 
 	@GetMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Entity> find(@PathVariable ID id) {
+	public <T> T find(@PathVariable ID id,
+					  @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
 		Entity entity = getService().findById(id);
-		return ResponseEntity.ok().body(entity);
+		return (T) ResponseEntity.ok(toJson(ViewDefinition.create(views), entity));
 	}
 
 	@GetMapping(value="/detail/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Entity> findDetail(@PathVariable ID id) {
+	public <T> T findDetail(@PathVariable ID id,
+							@RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
 		Entity entity = getService().findDetailById(id);
-		return ResponseEntity.ok().body(entity);
+
+		ViewDefinition viewDefinition = ViewDefinition.create(views);
+		return (T) ResponseEntity.ok(toJson(viewDefinition, entity));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -203,7 +208,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping(value = "/query/page", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T queryWithPage(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
-													  @RequestParam(value = "views", required = false, defaultValue = "") List<String> views,
+													  @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
 													  @PageableDefault Pageable pageable,
 													  QueryParameter queryParameter) {
 		queryParameter.setPageable(true); //force pageable
@@ -214,7 +219,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@GetMapping(value = "/query", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T query(@RequestParam(value = "opt", required = false, defaultValue = "") String query,
-					   @RequestParam(value = "views", required = false, defaultValue = "") List<String> views,
+					   @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
 					   @PageableDefault Pageable pageable,
 					   QueryParameter queryParameter) {
 
@@ -247,11 +252,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 					   @PageableDefault Pageable pageable) {
 		T result = (T) getService().query(queryDefinition, pageable);
 
-		if (queryWithViews && !queryDefinition.getViews().isEmpty()) {
-			return (T) ResponseEntity.ok(getJsonView(queryDefinition, result));
-		} else {
-			return (T) ResponseEntity.ok(result);
-		}
+		return (T) ResponseEntity.ok(toJson(queryDefinition, result));
 	}
 
 	@PostMapping(value = "/query", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -265,23 +266,24 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			result = (T) getService().query(queryDefinition, pageable.getSort());
 		}
 
-		if (queryWithViews && !queryDefinition.getViews().isEmpty()) {
-			return (T) ResponseEntity.ok(getJsonView(queryDefinition, result));
-		} else {
-			return (T) ResponseEntity.ok(result);
-		}
+		return (T) ResponseEntity.ok(toJson(queryDefinition, result));
 	}
 
 	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Entity>> findAll(@SortDefault Sort sort) {
+	public <T> T findAll(@SortDefault Sort sort,
+						 @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
 		List<Entity> list = getService().findAll(sort);
-		return ResponseEntity.ok(list);
+
+		ViewDefinition viewDefinition = ViewDefinition.create(views);
+		return (T) ResponseEntity.ok(toJson(viewDefinition, list));
 	}
 
 	@GetMapping(value = "/pages", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<Entity>> findAllPageAndSort(@PageableDefault Pageable pageable/*, PagedResourcesAssembler<Entity> pagedAssembler*/) {
+	public ResponseEntity<String> findAllPageAndSort(@PageableDefault Pageable pageable,
+													 @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
 		Page<Entity> page = getService().findAllWithPage(pageable);
-		return ResponseEntity.ok(page);
+		ViewDefinition viewDefinition = ViewDefinition.create(views);
+		return ResponseEntity.ok(toJson(viewDefinition, page));
 	}
 
 	private boolean isDefaultPageable(Boolean pageable) {
@@ -298,124 +300,126 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		return springApiToolsProperties.getListDefaultSize();
 	}
 
-	private <T> String getJsonView(QueryDefinition queryDefinition, T result) {
-		List<String> views = queryDefinition.getViews();
-		try {
-			Set<Field> ignoreAnnotations = ReflectionUtils.getAllFields(entityClass,
-					field -> field.isAnnotationPresent(JsonIgnoreProperties.class)
-							|| field.isAnnotationPresent(JsonIgnore.class));
+	/**
+	 * Serialize Object to Json with ViewDefinition supported
+	 *
+	 * @param viewDefinition views
+	 * @param result Object
+	 * @return json
+	 */
+	private <T> String toJson(ViewDefinition viewDefinition, T result) {
 
-			List<String> jsonIgnore = new ArrayList<>();
-			ignoreAnnotations.forEach(field -> {
-				if (field.isAnnotationPresent(JsonIgnoreProperties.class)) {
-					JsonIgnoreProperties properties = field.getAnnotation(JsonIgnoreProperties.class);
-					Arrays.stream(properties.value()).forEach(value -> jsonIgnore.add(String.format("%s.%s",
-							field.getName(), value)));
-				} else {
-					jsonIgnore.add(field.getName());
-				}
-			});
+		ObjectMapper objectMapper = jackson2HttpMessageConverter
+				.getObjectMapper();
 
-			jsonIgnore.add("*");
-			views.removeAll(jsonIgnore);
+		if (queryWithViews && !viewDefinition.getViews().isEmpty()) {
+			Set<String> views = viewDefinition.getViews();
+			try {
+				Set<Field> ignoreAnnotations = ReflectionUtils.getAllFields(entityClass,
+						field -> field.isAnnotationPresent(JsonIgnoreProperties.class)
+								|| field.isAnnotationPresent(JsonIgnore.class));
 
-			List<String> fetches = new ArrayList<>();
-			if (queryDefinition.getFilters() != null && !queryDefinition.getFilters().isEmpty()) {
-				queryDefinition.getFilters().forEach(filterDefinition -> {
-					if (filterDefinition.isJoin() && filterDefinition.isFetch()) {
-						fetches.add(filterDefinition.getPathJoin());
+				List<String> jsonIgnore = new ArrayList<>();
+				ignoreAnnotations.forEach(field -> {
+					if (field.isAnnotationPresent(JsonIgnoreProperties.class)) {
+						JsonIgnoreProperties properties = field.getAnnotation(JsonIgnoreProperties.class);
+						Arrays.stream(properties.value()).forEach(value -> jsonIgnore.add(String.format("%s.%s",
+								field.getName(), value)));
+					} else {
+						jsonIgnore.add(field.getName());
 					}
 				});
-			}
-			if (queryDefinition.getJoins() != null && !queryDefinition.getJoins().isEmpty()) {
-				queryDefinition.getJoins().forEach(joinDefinition -> {
-					if (joinDefinition.isFetch()) {
-						fetches.add(joinDefinition.getField());
-					}
-				});
-			}
+
+				jsonIgnore.add("*");
+				views.removeAll(jsonIgnore);
+
+				Set<String> fetches = viewDefinition.getFetches();
 
 			/*
 				remove views with @JsonIgnore and without fetch definition in FilterDefinition or JoinDefinition
 			 */
-			views = views.stream()
-					.filter(view -> {
-						int idx = view.indexOf(".");
-						if (idx == -1) {
-							return true;
-						} else {
-							try {
-								boolean dynamicView;
-								String fieldName = view.substring(0, idx);
-								Field field = entityClass.getDeclaredField(fieldName);
-								if (field.getGenericType() instanceof ParameterizedType) {
-									ParameterizedType pType = (ParameterizedType) field.getGenericType();
-									Class<?> type = ((Class<?>) pType.getActualTypeArguments()[0]);
-									dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
-										|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
-											&& type.isAnnotationPresent(DynamicView.class));
+				views = views.stream()
+						.filter(view -> {
+							int idx = view.indexOf(".");
+							if (idx == -1) {
+								return true;
+							} else {
+								try {
+									boolean dynamicView;
+									String fieldName = view.substring(0, idx);
+									Field field = entityClass.getDeclaredField(fieldName);
+									if (field.getGenericType() instanceof ParameterizedType) {
+										ParameterizedType pType = (ParameterizedType) field.getGenericType();
+										Class<?> type = ((Class<?>) pType.getActualTypeArguments()[0]);
+										dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
+												|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
+												&& type.isAnnotationPresent(DynamicView.class));
 
-									field = type.getDeclaredField(view.substring(idx + 1));
-								} else {
-									dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
-											|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
-											&& field.getType().isAnnotationPresent(DynamicView.class));
+										field = type.getDeclaredField(view.substring(idx + 1));
+									} else {
+										dynamicView = springApiToolsProperties.getQueryWithViews() == QueryView.all
+												|| (springApiToolsProperties.getQueryWithViews() == QueryView.entity
+												&& field.getType().isAnnotationPresent(DynamicView.class));
 
-									field = field.getType().getDeclaredField(view.substring(idx + 1));
+										field = field.getType().getDeclaredField(view.substring(idx + 1));
+									}
+
+									boolean fieldWithJsonIgnore = field.isAnnotationPresent(JsonIgnore.class);
+									boolean fieldWithFetch = fetches.contains(fieldName);
+									boolean showField = !fieldWithJsonIgnore && fieldWithFetch && dynamicView;
+									if (!showField) {
+										log.debug(String.format("ignore field %s to query view in entity %s." +
+														" annotation JsonIgnore: %s, fetch: %s, dynamicView: %s",
+												view, entityClass.getName(), fieldWithJsonIgnore, fieldWithFetch, dynamicView));
+									}
+									return showField;
+								} catch (NoSuchFieldException e) {
+									log.error(String.format("field %s to query view in entity %s. %s",
+											view, entityClass.getName(), e.getMessage()), e);
 								}
-
-								boolean fieldWithJsonIgnore = field.isAnnotationPresent(JsonIgnore.class);
-								boolean fieldWithFetch = fetches.contains(fieldName);
-								boolean showField = !fieldWithJsonIgnore && fieldWithFetch && dynamicView;
-								if (!showField) {
-									log.debug(String.format("ignore field %s to query view in entity %s." +
-													" annotation JsonIgnore: %s, fetch: %s, dynamicView: %s",
-											view, entityClass.getName(), fieldWithJsonIgnore, fieldWithFetch, dynamicView));
-								}
-								return showField;
-							} catch (NoSuchFieldException e) {
-								log.error(String.format("field %s to query view in entity %s. %s",
-										view, entityClass.getName(), e.getMessage()), e);
+								return false;
 							}
-							return false;
-						}
-					}).collect(Collectors.toList());
+						}).collect(Collectors.toSet());
 
-			ObjectMapper objectMapper = jackson2HttpMessageConverter
-					.getObjectMapper()
-					.copy();
+				if (result instanceof Page) {
+					Page<Entity> page = (Page<Entity>) result;
+					List<Entity> content = page.getContent();
+					page = new PageImpl<>(new ArrayList<>(), page.getPageable(), page.getTotalElements());
 
-			if (result instanceof Page) {
-				Page<Entity> page = (Page<Entity>) result;
-				List<Entity> content = page.getContent();
-				page = new PageImpl<>(new ArrayList<>(), page.getPageable(), page.getTotalElements());
+					ObjectNode rootNode = objectMapper.createObjectNode();
+					JsonView<?> jsonView = JsonView.with(content)
+							.onClass(entityClass,
+									Match.match()
+											.exclude("*")
+											.include(views.toArray(new String[0])));
+					rootNode.putPOJO("content", jsonView);
+					rootNode.putPOJO("pageable", page.getPageable());
+					rootNode.put("total", page.getTotalElements());
 
-				ObjectNode rootNode = objectMapper.createObjectNode();
-				JsonView<?> jsonView = JsonView.with(content)
-						.onClass(entityClass,
-								Match.match()
-										.exclude("*")
-										.include(views.toArray(new String[0])));
-				rootNode.putPOJO("content", jsonView);
-				rootNode.putPOJO("pageable", page.getPageable());
-				rootNode.put("total", page.getTotalElements());
+					return objectMapper
+							.writeValueAsString(rootNode);
 
-				return objectMapper
-						.writeValueAsString(rootNode);
+				} else {
+					JsonView<?> jsonView = JsonView.with(result)
+							.onClass(entityClass,
+									Match.match()
+											.exclude("*")
+											.include(views.toArray(new String[0])));
 
-			} else {
-				JsonView<?> jsonView = JsonView.with(result)
-						.onClass(entityClass,
-								Match.match()
-										.exclude("*")
-										.include(views.toArray(new String[0])));
-
-				return objectMapper.writeValueAsString(jsonView);
+					return objectMapper.writeValueAsString(jsonView);
+				}
+			} catch (JsonProcessingException e) {
+				log.error(e.getMessage(), e);
+				throw new RuntimeException(e);
 			}
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
+		} else {
+			try {
+				return objectMapper.writeValueAsString(result);
+			} catch (JsonProcessingException e) {
+				log.error(e.getMessage(), e);
+				throw new RuntimeException(e);
+			}
 		}
-
 	}
 
 }

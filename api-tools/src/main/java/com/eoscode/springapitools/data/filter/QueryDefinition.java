@@ -1,18 +1,29 @@
 package com.eoscode.springapitools.data.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class QueryDefinition {
+public class QueryDefinition implements ViewDefinition {
 
     private Boolean distinct;
-    private List<String> views = new ArrayList<>();
+    private Set<String> views = new HashSet<>();
     private List<FilterDefinition> filters = new ArrayList<>();
     private List<SortDefinition> sorts = new ArrayList<>();
     private List<JoinDefinition> joins = new ArrayList<>();
     private String operator;
 
     public QueryDefinition() {}
+
+    public QueryDefinition(Set<String> views) {
+        this.views = views;
+    }
+
+    public QueryDefinition(Set<String> views, List<JoinDefinition> joins) {
+        this.views = views;
+        this.joins = joins;
+    }
 
     public boolean isDistinct() {
         if (distinct == null) {
@@ -25,11 +36,11 @@ public class QueryDefinition {
         this.distinct = distinct;
     }
 
-    public List<String> getViews() {
+    public Set<String> getViews() {
         return views;
     }
 
-    public void setViews(List<String> views) {
+    public void setViews(Set<String> views) {
         this.views = views;
     }
 
@@ -65,4 +76,23 @@ public class QueryDefinition {
         this.operator = operator;
     }
 
+    @Override
+    public Set<String> getFetches() {
+        Set<String> fetches = new HashSet<>();
+        if (getFilters() != null && !getFilters().isEmpty()) {
+            getFilters().forEach(filterDefinition -> {
+                if (filterDefinition.isJoin() && filterDefinition.isFetch()) {
+                    fetches.add(filterDefinition.getPathJoin());
+                }
+            });
+        }
+        if (getJoins() != null && !getJoins().isEmpty()) {
+            getJoins().forEach(joinDefinition -> {
+                if (joinDefinition.isFetch()) {
+                    fetches.add(joinDefinition.getField());
+                }
+            });
+        }
+        return fetches;
+    }
 }
