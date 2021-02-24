@@ -755,11 +755,23 @@ Da mesma forma que temos o suporte ao fetch dinâmico, que possibilita indicar q
 
 **GET** - {path}/{id}, {path}/detail/{id}, {path}/all, {path}/query, {path}/query/page 
 ```http request
+/api/cities/dcacfe35-2aa7-4627-972e-1d42f6c8cc1f?views=id,name
+```
+
+```http request
+/api/cities/detail/dcacfe35-2aa7-4627-972e-1d42f6c8cc1f?views=id,name,state.id,state.name
+```
+
+```http request
 /api/cities/query?opt=population>=50000views=id,name
 ```  
 
 ```http request
 /api/cities/query?opt=population>=50000&fetches=state&views=id,name,state.id,state.name
+```
+
+```http request
+/api/cities/all?views=id,name
 ```
 
 Obs.:
