@@ -20,9 +20,8 @@ import java.util.Date;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private AuthenticationManager authenticationManager;
-
-    private JWTManager jwtManager;
+    private final AuthenticationManager authenticationManager;
+    private final JWTManager jwtManager;
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager, JWTManager jwtManager) {
         setAuthenticationFailureHandler(new JWTAuthenticationFailureHandler());

@@ -482,7 +482,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
     }
 
-    private QueryDefinition createQueryDefinition(String query, QueryParameter queryParameter) {
+    public QueryDefinition createQueryDefinition(String query, QueryParameter queryParameter) {
         List<FilterDefinition> criteria = new ArrayList<>();
 
         List<String> filters = new ArrayList<>();

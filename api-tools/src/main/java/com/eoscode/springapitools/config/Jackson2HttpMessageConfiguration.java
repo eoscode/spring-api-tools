@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.monitorjbl.json.JsonViewModule;
+import com.monitorjbl.json.JsonViewSupportFactoryBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 /**
@@ -27,7 +30,14 @@ public class Jackson2HttpMessageConfiguration {
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
+        objectMapper.registerModule(new JsonViewModule());
+
         return jsonConverter;
+    }
+
+   // @Bean
+    public JsonViewSupportFactoryBean jsonView() {
+        return new JsonViewSupportFactoryBean();
     }
 
 }
