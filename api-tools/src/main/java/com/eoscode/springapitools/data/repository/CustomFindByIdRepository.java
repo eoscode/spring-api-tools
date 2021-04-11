@@ -7,8 +7,6 @@ import java.util.Optional;
 @NoRepositoryBean
 public interface CustomFindByIdRepository<Entity, ID> {
 
-    Optional<Entity> findCustomById(Class<Entity> entityClass, ID id);
-
-    Optional<Entity> findDetailById(Class<Entity> entityClass, ID id);
+    Optional<Entity> findById(Class<Entity> entityClass, ID id);
 
 }

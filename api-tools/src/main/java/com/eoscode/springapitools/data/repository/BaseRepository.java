@@ -24,7 +24,7 @@ public class BaseRepository<Entity, ID> {
 
         EntityGraph<?> graph = entityManger.createEntityGraph(entityClass.getSimpleName()+"."+entityGraph);
         if (graph == null) {
-            return Optional.empty();
+            return Optional.of(entityManger.find(entityClass, id));
         }
 
         Map<String, Object> hints = new HashMap<>();
