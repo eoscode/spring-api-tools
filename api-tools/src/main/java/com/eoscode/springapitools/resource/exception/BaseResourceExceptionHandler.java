@@ -110,6 +110,15 @@ public class BaseResourceExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(standardError);
 	}
 
+	@ExceptionHandler(MethodNotAllowedException.class)
+	public ResponseEntity<StandardError> methodNotAllowed(MethodNotAllowedException e, HttpServletRequest request) {
+		StandardError standardError = new StandardError(now(), HttpStatus.METHOD_NOT_ALLOWED.value(),
+				"Method Not Allowed", e.getMessage(), request.getRequestURI());
+
+		log.error("methodNotAllowed -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(standardError);
+	}
+
 	private String now() {
 		return Instant.now().toString();
 	}
