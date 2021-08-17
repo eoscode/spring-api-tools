@@ -81,6 +81,23 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         metaData();
     }
 
+    public AbstractService(ApplicationContext applicationContext, Repository repository) {
+        this.applicationContext = applicationContext;
+        this.repository = repository;
+
+        Class<Repository> repositoryClass = (Class<Repository>) repository.getClass();
+
+        this.repositoryType = repositoryClass.getGenericInterfaces()[0];
+        Type type = ((Class) this.repositoryType).getGenericInterfaces()[0];
+        ParameterizedType pType = (ParameterizedType) type;
+
+        this.entityType =  pType.getActualTypeArguments()[0];
+        this.identifierType = pType.getActualTypeArguments()[1];
+
+        this.entityClass = (Class<Entity>) entityType;
+        metaData();
+    }
+
     public Type getRepositoryType() {
         return repositoryType;
     }
