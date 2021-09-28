@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.sample.config;
+package com.eoscode.springapitools.sample.configuration;
 
 import com.eoscode.springapitools.config.Jackson2HttpMessageConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
