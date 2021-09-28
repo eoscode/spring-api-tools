@@ -24,7 +24,6 @@
 
     <modules>
         <module>api-tools</module>
-        <module>sample</module>
     </modules>
 
 </project>
