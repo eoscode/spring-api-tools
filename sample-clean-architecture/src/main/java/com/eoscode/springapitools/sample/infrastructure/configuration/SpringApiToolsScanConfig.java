@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.sample.config;
+package com.eoscode.springapitools.sample.infrastructure.configuration;
 
 import com.eoscode.springapitools.config.SpringApiToolsScan;
 import org.springframework.context.annotation.Configuration;

@@ -55,7 +55,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	private MappingJackson2HttpMessageConverter jackson2HttpMessageConverter;
 
 	private Service service;
-	private Set<HttpMethod> methodNotAllowed = new HashSet<>();
+	private final Set<HttpMethod> methodNotAllowed = new HashSet<HttpMethod>();
 
 	private final Type serviceType;
 	private final Type entityType;
