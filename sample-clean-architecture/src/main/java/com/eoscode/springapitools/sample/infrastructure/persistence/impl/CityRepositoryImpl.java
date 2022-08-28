@@ -1,41 +1,55 @@
 package com.eoscode.springapitools.sample.infrastructure.persistence.impl;
 
-import com.eoscode.springapitools.sample.core.city.City;
-import com.eoscode.springapitools.sample.core.city.ports.CityRepository;
+import com.eoscode.springapitools.sample.core.domain.model.City;
+import com.eoscode.springapitools.sample.core.domain.repositories.ICityRepository;
+import com.eoscode.springapitools.sample.infrastructure.persistence.converters.CityRepositoryConverter;
+import com.eoscode.springapitools.sample.infrastructure.persistence.entities.CityEntity;
+import com.eoscode.springapitools.sample.infrastructure.persistence.repositories.CityRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class CityRepositoryImpl implements CityRepository {
+public class CityRepositoryImpl implements ICityRepository {
 
-    public final com.eoscode.springapitools.sample.infrastructure.persistence.repositories.CityRepository cityRepository;
+    public final CityRepository cityRepository;
 
-    public CityRepositoryImpl(com.eoscode.springapitools.sample.infrastructure.persistence.repositories.CityRepository cityRepository) {
+    private final CityRepositoryConverter cityRepositoryConverter;
+
+    public CityRepositoryImpl(CityRepository cityRepository, CityRepositoryConverter cityRepositoryConverter) {
         this.cityRepository = cityRepository;
+        this.cityRepositoryConverter = cityRepositoryConverter;
     }
 
     @Override
     public City findById(String id) {
-        return null;
+        Optional<CityEntity> cityEntity = cityRepository.findById(id);
+        return cityEntity.map(cityRepositoryConverter::mapToEntity).orElse(null);
     }
 
     @Override
-    public City save(City state) {
-        return null;
+    public City save(City city) {
+        CityEntity cityEntity = cityRepository.save(cityRepositoryConverter.mapToTable(city));
+        return cityRepositoryConverter.mapToEntity(cityEntity);
     }
 
     @Override
-    public City update(City state) {
-        return null;
+    public City update(City city) {
+        CityEntity cityEntity = cityRepository.save(cityRepositoryConverter.mapToTable(city));
+        return cityRepositoryConverter.mapToEntity(cityEntity);
     }
 
     @Override
-    public void delete(City state) {
-
+    public void delete(City city) {
+        cityRepository.delete(cityRepositoryConverter.mapToTable(city));
     }
 
     @Override
     public List<City> getAll() {
-        return null;
+        return cityRepository.findAll()
+                .stream()
+                .map(cityRepositoryConverter::mapToEntity)
+                .collect(Collectors.toList());
     }
 
 }

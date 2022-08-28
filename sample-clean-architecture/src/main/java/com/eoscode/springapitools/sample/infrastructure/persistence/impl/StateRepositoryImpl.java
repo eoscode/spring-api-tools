@@ -1,23 +1,24 @@
 package com.eoscode.springapitools.sample.infrastructure.persistence.impl;
 
-import com.eoscode.springapitools.sample.core.state.State;
-import com.eoscode.springapitools.sample.core.state.ports.StateRepository;
+import com.eoscode.springapitools.sample.core.domain.model.State;
+import com.eoscode.springapitools.sample.core.domain.repositories.IStateRepository;
 import com.eoscode.springapitools.sample.infrastructure.persistence.converters.StateRepositoryConverter;
 import com.eoscode.springapitools.sample.infrastructure.persistence.entities.StateEntity;
+import com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository;
 import com.eoscode.springapitools.service.RepositoryService;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class StateRepositoryImpl implements StateRepository {
+public class StateRepositoryImpl implements IStateRepository {
 
-    private final RepositoryService<com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository, StateEntity, String> repositoryService;
+    private final RepositoryService<StateRepository, StateEntity, String> repositoryService;
     private final StateRepositoryConverter stateRepositoryConverter;
 
     public StateRepositoryImpl(ApplicationContext applicationContext,
                                StateRepositoryConverter stateRepositoryConverter,
-                               com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository stateRepository) {
+                               StateRepository stateRepository) {
         this.stateRepositoryConverter = stateRepositoryConverter;
         //repositoryService = new RepositoryService<>(applicationContext, StateRepository.class, StateEntity.class, String.class);
         repositoryService = new RepositoryService<>(applicationContext, stateRepository);

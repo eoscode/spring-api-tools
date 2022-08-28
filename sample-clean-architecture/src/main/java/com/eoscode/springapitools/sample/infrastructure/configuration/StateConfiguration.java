@@ -1,12 +1,13 @@
 package com.eoscode.springapitools.sample.infrastructure.configuration;
 
-import com.eoscode.springapitools.sample.core.state.ports.StateRepository;
-import com.eoscode.springapitools.sample.core.state.usecase.GetAllStateUserCase;
-import com.eoscode.springapitools.sample.core.state.usecase.GetStateUserCase;
-import com.eoscode.springapitools.sample.core.state.usecase.impl.GetAllStateUserCaseImpl;
-import com.eoscode.springapitools.sample.core.state.usecase.impl.GetStateUserCaseImpl;
+import com.eoscode.springapitools.sample.core.domain.repositories.IStateRepository;
+import com.eoscode.springapitools.sample.core.application.state.usecases.GetAllStateUserCase;
+import com.eoscode.springapitools.sample.core.application.state.usecases.GetStateUserCase;
+import com.eoscode.springapitools.sample.core.application.state.usecases.impl.GetAllStateUserCaseImpl;
+import com.eoscode.springapitools.sample.core.application.state.usecases.impl.GetStateUserCaseImpl;
 import com.eoscode.springapitools.sample.infrastructure.persistence.converters.StateRepositoryConverter;
 import com.eoscode.springapitools.sample.infrastructure.persistence.impl.StateRepositoryImpl;
+import com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,7 @@ public class StateConfiguration {
     private final ApplicationContext applicationContext;
     private final com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository stateRepository;
 
-    public StateConfiguration(ApplicationContext applicationContext, com.eoscode.springapitools.sample.infrastructure.persistence.repositories.StateRepository stateRepository) {
+    public StateConfiguration(ApplicationContext applicationContext, StateRepository stateRepository) {
         this.applicationContext = applicationContext;
         this.stateRepository = stateRepository;
     }
@@ -28,7 +29,7 @@ public class StateConfiguration {
     }
 
     @Bean
-    public StateRepository createStateRepositoryServiceImpl() {
+    public IStateRepository createStateRepositoryServiceImpl() {
         return new StateRepositoryImpl(applicationContext,
                 createStateRepositoryConverter(),
                 stateRepository);

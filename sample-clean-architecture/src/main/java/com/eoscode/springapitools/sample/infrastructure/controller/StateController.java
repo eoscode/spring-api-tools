@@ -1,9 +1,9 @@
 package com.eoscode.springapitools.sample.infrastructure.controller;
 
-import com.eoscode.springapitools.sample.core.state.State;
-import com.eoscode.springapitools.sample.core.state.exception.StateAlreadyExistException;
-import com.eoscode.springapitools.sample.core.state.usecase.GetAllStateUserCase;
-import com.eoscode.springapitools.sample.core.state.usecase.GetStateUserCase;
+import com.eoscode.springapitools.sample.core.domain.model.State;
+import com.eoscode.springapitools.sample.core.application.state.exception.StateAlreadyExistException;
+import com.eoscode.springapitools.sample.core.application.state.usecases.GetAllStateUserCase;
+import com.eoscode.springapitools.sample.core.application.state.usecases.GetStateUserCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

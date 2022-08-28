@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.sample.core.shared;
+package com.eoscode.springapitools.sample.core.domain.shared;
 
 import java.util.List;
 

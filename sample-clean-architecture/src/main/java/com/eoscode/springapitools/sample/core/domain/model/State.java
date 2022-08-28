@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.sample.core.state;
+package com.eoscode.springapitools.sample.core.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

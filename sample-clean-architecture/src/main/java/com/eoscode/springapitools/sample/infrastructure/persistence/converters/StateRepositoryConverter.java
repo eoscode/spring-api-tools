@@ -1,6 +1,6 @@
 package com.eoscode.springapitools.sample.infrastructure.persistence.converters;
 
-import com.eoscode.springapitools.sample.core.state.State;
+import com.eoscode.springapitools.sample.core.domain.model.State;
 import com.eoscode.springapitools.sample.infrastructure.persistence.entities.StateEntity;
 import com.eoscode.springapitools.sample.infrastructure.shared.RepositoryConverter;
 
