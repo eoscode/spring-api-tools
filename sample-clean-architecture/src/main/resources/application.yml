@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/testdb;DB_CLOSE_ON_EXIT=FALSE;IFEXISTS=FALSE;DB_CLOSE_DELAY=-1;
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+  h2:
+    console:
+      enabled: true
+spring-api-tools:
+  enable-default-pageable: false
+  string-case-sensitive: lowercase
+  query-with-join-configuration: true
+  query-with-views: all

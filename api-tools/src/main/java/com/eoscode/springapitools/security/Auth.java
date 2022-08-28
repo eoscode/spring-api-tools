@@ -10,10 +10,10 @@ import java.util.Set;
 public class Auth<T extends Serializable> implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    private T id;
-    private String username;
-    private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final T id;
+    private final String username;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public Auth(T id, String username, String password, Set<? extends GrantedAuthority> authorities) {
         super();

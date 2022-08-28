@@ -16,7 +16,6 @@ public class JWTManager {
     @Value("${security.jwt.expiration}")
     private Long expiration;
 
-
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
