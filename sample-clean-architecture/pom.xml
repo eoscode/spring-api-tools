@@ -6,12 +6,12 @@
 		<groupId>com.github.eoscode</groupId>
 		<artifactId>spring-api-tools-module</artifactId>
 		<version>1.0.0</version>
-		<relativePath>../</relativePath>
+        <relativePath>../</relativePath>
 	</parent>
 
-	<artifactId>springapitools-sample</artifactId>
+	<artifactId>springapitools-sample-clean-architecture</artifactId>
 	<version>1.0.1</version>
-	<name>sample</name>
+	<name>sample-clean-architecture</name>
 	<description>Sample for Spring API Tools</description>
 
 	<properties>
@@ -62,6 +62,11 @@
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-hibernate5</artifactId>
 		</dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
