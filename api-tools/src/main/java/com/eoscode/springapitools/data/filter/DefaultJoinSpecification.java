@@ -5,7 +5,7 @@ import javax.persistence.criteria.*;
 @SuppressWarnings("rawtypes")
 public class DefaultJoinSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {
 
-    private Join join;
+    private final Join join;
 
     public DefaultJoinSpecification(Join join) {
         this.join = join;

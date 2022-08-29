@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "state")
 /*@NamedEntityGraphs(
-        @NamedEntityGraph(name = "State.detail", attributeNodes = {
+        @NamedEntityGraph(name = "State.findById", attributeNodes = {
                 @NamedAttributeNode("cities")
         })
 )*/

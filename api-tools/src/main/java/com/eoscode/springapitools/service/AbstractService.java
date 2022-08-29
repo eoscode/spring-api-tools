@@ -8,6 +8,7 @@ import com.eoscode.springapitools.data.domain.NoDelete;
 import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
+import com.eoscode.springapitools.data.repository.CustomFindDetailByIdRepository;
 import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
 import com.eoscode.springapitools.util.ObjectUtils;
@@ -36,13 +37,16 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     private final Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
-    private CustomFindByIdRepository customFindByIdRepository;
+    private ApplicationContext applicationContext;
 
     @Autowired
     private CustomDeleteByIdRepository customDeleteByIdRepository;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private CustomFindByIdRepository customFindByIdRepository;
+
+    @Autowired
+    private CustomFindDetailByIdRepository customFindDetailByIdRepository;
 
     @Autowired
     private SpringApiToolsProperties springApiToolsProperties;
@@ -73,6 +77,23 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         this.repositoryType = repositoryType;
         this.entityType = entityType;
         this.identifierType = identifierType;
+        this.entityClass = (Class<Entity>) entityType;
+        metaData();
+    }
+
+    public AbstractService(ApplicationContext applicationContext, Repository repository) {
+        this.applicationContext = applicationContext;
+        this.repository = repository;
+
+        Class<Repository> repositoryClass = (Class<Repository>) repository.getClass();
+
+        this.repositoryType = repositoryClass.getGenericInterfaces()[0];
+        Type type = ((Class) this.repositoryType).getGenericInterfaces()[0];
+        ParameterizedType pType = (ParameterizedType) type;
+
+        this.entityType =  pType.getActualTypeArguments()[0];
+        this.identifierType = pType.getActualTypeArguments()[1];
+
         this.entityClass = (Class<Entity>) entityType;
         metaData();
     }
@@ -110,6 +131,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
             if (customFindByIdRepository == null) {
                 customFindByIdRepository = applicationContext.getBean(CustomFindByIdRepository.class);
+            }
+
+            if (customFindDetailByIdRepository == null) {
+                customFindDetailByIdRepository = applicationContext.getBean(CustomFindDetailByIdRepository.class);
             }
 
             if (customDeleteByIdRepository == null) {
@@ -169,13 +194,13 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         EntityNotFoundException objectNotFound = new EntityNotFoundException(
                 "Object not found! Id: " + id + ", Type: " + getEntityType().getTypeName ());
 
-        Optional<Entity> result = customFindByIdRepository.findCustomById(getEntityClass(), id);
+        Optional<Entity> result = customFindByIdRepository.findById(getEntityClass(), id);
         return result.orElse(getRepository().findById(id).orElseThrow(() -> objectNotFound));
     }
 
     public Entity findDetailById(ID id) throws EntityNotFoundException {
         Class<Entity> classType = (Class<Entity>) entityType;
-        Optional<Entity> result = customFindByIdRepository.findDetailById(classType, id);
+        Optional<Entity> result = customFindDetailByIdRepository.findDetailById(classType, id);
         return result.orElseGet(() -> findById(id));
     }
 
@@ -185,10 +210,10 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Transactional
     public void deleteById(ID id) {
-        Entity entity = findById(id);
+        findById(id);
         Class<Entity> classEntity = (Class<Entity>) entityType;
         if (classEntity.isAnnotationPresent(NoDelete.class)) {
-           customDeleteByIdRepository.deleteById(classEntity, id);
+           customDeleteByIdRepository.deleteById(entityClass, id);
         } else {
             getRepository().deleteById(id);
         }
@@ -199,7 +224,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         Class<Entity> classEntity = (Class<Entity>) entityType;
         if (classEntity.isAnnotationPresent(NoDelete.class)) {
             ID id =  ((Identifier<ID>) entity).getId();
-            customDeleteByIdRepository.deleteById(classEntity, id);
+            customDeleteByIdRepository.deleteById(entityClass, id);
         } else {
             getRepository().delete(entity);
         }

@@ -7,6 +7,7 @@ import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.data.filter.ViewDefinition;
+import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.*;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -35,10 +37,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"Duplicates", "unchecked"})
@@ -56,6 +55,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	private MappingJackson2HttpMessageConverter jackson2HttpMessageConverter;
 
 	private Service service;
+	private final Set<HttpMethod> methodNotAllowed = new HashSet<HttpMethod>();
 
 	private final Type serviceType;
 	private final Type entityType;
@@ -90,6 +90,12 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		} else if (springApiToolsProperties.getQueryWithViews() == QueryView.none) {
 			queryWithViews = false;
 		}
+
+		if (getClass().isAnnotationPresent(MethodNotAllowed.class)) {
+			MethodNotAllowed methodNotAllowedAnnotation = getClass().getAnnotation(MethodNotAllowed.class);
+			methodNotAllowed.addAll(Arrays.stream(methodNotAllowedAnnotation.methods()).collect(Collectors.toSet()));
+		}
+
 	}
 
 	public Type getServiceType() {
@@ -114,6 +120,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Entity> save(@Valid @RequestBody Entity entity) {
+
+		if (methodNotAllowed.contains(HttpMethod.POST)) {
+			throw new MethodNotAllowedException(HttpMethod.POST.name());
+		}
+
 		entity = getService().save(entity);
 
 		Identifier<?> identifier = null;
@@ -133,6 +144,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T find(@PathVariable ID id,
 					  @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		Entity entity = getService().findById(id);
 		return (T) ResponseEntity.ok(toJson(ViewDefinition.create(views), entity));
 	}
@@ -140,6 +156,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value="/detail/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T findDetail(@PathVariable ID id,
 							@RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		Entity entity = getService().findDetailById(id);
 
 		ViewDefinition viewDefinition = ViewDefinition.create(views);
@@ -149,6 +170,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@SuppressWarnings("unchecked")
 	@PutMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> update(@Valid @RequestBody Entity entity, @PathVariable ID id) {
+
+		if (methodNotAllowed.contains(HttpMethod.PUT)) {
+			throw new MethodNotAllowedException(HttpMethod.PUT.name());
+		}
+
 		if (entity instanceof Identifier) {
 			Identifier<ID> identifier = (Identifier<ID>) entity;
 			identifier.setId(id);
@@ -161,6 +187,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@SuppressWarnings("unchecked")
 	@PatchMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> patch(@Valid @RequestBody Entity entity, @PathVariable ID id) {
+
+		if (methodNotAllowed.contains(HttpMethod.PATCH)) {
+			throw new MethodNotAllowedException(HttpMethod.PATCH.name());
+		}
+
 		if (entity instanceof Identifier) {
 			Identifier<ID> identifier = (Identifier<ID>) entity;
 			identifier.setId(id);
@@ -172,6 +203,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> delete(@PathVariable ID id) {
+
+		if (methodNotAllowed.contains(HttpMethod.DELETE)) {
+			throw new MethodNotAllowedException(HttpMethod.DELETE.name());
+		}
+
 		getService().deleteById(id);
 		return ResponseEntity.noContent().build();
 	}
@@ -179,6 +215,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value = {"/page","/find/page"}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<Entity>> findWithPage(Entity filterBy,
 													 @PageableDefault Pageable pageable) {
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		Page<Entity> page = getService().find(filterBy, pageable);
 		return ResponseEntity.ok(page);
 	}
@@ -186,6 +226,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value = {"","/find"}, produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T find(Entity filterBy, @PageableDefault Pageable pageable,
 					  QueryParameter queryParameter) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		T result;
 		if (isDefaultPageable(queryParameter.getPageable())) {
 			result = (T) getService().find(filterBy, pageable);
@@ -211,6 +256,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 													  @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
 													  @PageableDefault Pageable pageable,
 													  QueryParameter queryParameter) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		queryParameter.setPageable(true); //force pageable
 		T result = query(query, views, pageable, queryParameter);
 
@@ -222,6 +272,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 					   @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
 					   @PageableDefault Pageable pageable,
 					   QueryParameter queryParameter) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
 
 		QueryDefinition queryDefinition = getService().createQueryDefinition(query, queryParameter);
 		queryDefinition.setViews(views);
@@ -250,6 +304,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@PostMapping(value = "/query/page", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T queryWitPage(@RequestBody(required = false) QueryDefinition queryDefinition,
 					   @PageableDefault Pageable pageable) {
+
+		if (methodNotAllowed.contains(HttpMethod.POST)) {
+			throw new MethodNotAllowedException(HttpMethod.POST.name());
+		}
+
 		T result = (T) getService().query(queryDefinition, pageable);
 
 		return (T) ResponseEntity.ok(toJson(queryDefinition, result));
@@ -259,6 +318,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	public <T> T query(@RequestBody(required = false) QueryDefinition queryDefinition,
 											  @RequestParam(value = "pageable", required = false) Boolean page,
 											  @PageableDefault Pageable pageable) {
+
+		if (methodNotAllowed.contains(HttpMethod.POST)) {
+			throw new MethodNotAllowedException(HttpMethod.POST.name());
+		}
+
 		T result;
 		if (isDefaultPageable(page)) {
 			result = (T) getService().query(queryDefinition, pageable);
@@ -272,6 +336,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
 	public <T> T findAll(@SortDefault Sort sort,
 						 @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		List<Entity> list = getService().findAll(sort);
 
 		ViewDefinition viewDefinition = ViewDefinition.create(views);
@@ -281,6 +350,11 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 	@GetMapping(value = "/pages", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> findAllPageAndSort(@PageableDefault Pageable pageable,
 													 @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views) {
+
+		if (methodNotAllowed.contains(HttpMethod.GET)) {
+			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
 		Page<Entity> page = getService().findAllWithPage(pageable);
 		ViewDefinition viewDefinition = ViewDefinition.create(views);
 		return ResponseEntity.ok(toJson(viewDefinition, page));
@@ -331,7 +405,7 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 				});
 
 				jsonIgnore.add("*");
-				views.removeAll(jsonIgnore);
+				jsonIgnore.forEach(views::remove);
 
 				Set<String> fetches = viewDefinition.getFetches();
 
