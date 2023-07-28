@@ -32,9 +32,6 @@ public abstract class BaseResource<Service extends AbstractService<?, Entity, ID
     @Autowired
     protected MappingJackson2HttpMessageConverter jackson2HttpMessageConverter;
 
-    @Autowired
-    protected ViewToJson viewToJson;
-
     private Service service;
     protected final Set<org.springframework.http.HttpMethod> methodNotAllowed = new HashSet<>();
 

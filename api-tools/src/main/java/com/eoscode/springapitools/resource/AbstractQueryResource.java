@@ -4,6 +4,7 @@ import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,9 @@ import java.util.Set;
 
 public abstract class AbstractQueryResource<Service extends AbstractService<?, Entity, ID>, Entity, ID>
         extends BaseResource<Service, Entity, ID> {
+
+    @Autowired
+    protected ViewToJson viewToJson;
 
     public AbstractQueryResource() {
         super();
