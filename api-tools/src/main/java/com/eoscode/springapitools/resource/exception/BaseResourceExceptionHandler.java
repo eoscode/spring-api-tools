@@ -23,7 +23,7 @@ import java.time.Instant;
 
 public class BaseResourceExceptionHandler {
 
-	protected final Log log = LogFactory.getLog(this.getClass());
+	protected final Log LOG = LogFactory.getLog(this.getClass());
 
 	protected URI getPathURI() {
 		return ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
@@ -38,7 +38,7 @@ public class BaseResourceExceptionHandler {
 		StandardError standardError = new StandardError(now(), HttpStatus.NOT_FOUND.value(),
 				"Not found", e.getMessage(), request.getRequestURI());
 
-		log.error("objectNotFound -> " + e.getMessage(), e);
+		LOG.error("objectNotFound -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
 	}
 
@@ -50,7 +50,7 @@ public class BaseResourceExceptionHandler {
 			validationError.addError(fieldError.getField(), fieldError.getDefaultMessage());
 		}
 
-		log.error("validation -> " + e.getMessage(), e);
+		LOG.error("validation -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
@@ -63,7 +63,7 @@ public class BaseResourceExceptionHandler {
 			e.getConstraintViolations().forEach(constraintViolation -> validationError.addError("", constraintViolation.getMessage()));
 		}
 
-		log.error("constraintViolation -> " + e.getMessage(), e);
+		LOG.error("constraintViolation -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
@@ -72,7 +72,7 @@ public class BaseResourceExceptionHandler {
 		ValidationError validationError = new ValidationError(now(), HttpStatus.CONFLICT.value(),
 				"Database error", e.getLocalizedMessage(), getPath());
 
-		log.error("dataIntegrityViolationException -> " + e.getMessage(), e);
+		LOG.error("dataIntegrityViolationException -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(validationError);
 	}
 
@@ -80,7 +80,7 @@ public class BaseResourceExceptionHandler {
 	public ResponseEntity<StandardError> validation(ValidationException e, HttpServletRequest request) {
 		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
 				"Validation error", e.getMessage(), request.getRequestURI());
-		log.error("validation -> " + e.getMessage(), e);
+		LOG.error("validation -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
@@ -88,7 +88,7 @@ public class BaseResourceExceptionHandler {
 	public ResponseEntity<StandardError> searchException(SearchException e, HttpServletRequest request) {
 		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
 				"Search error", e.getMessage(), request.getRequestURI());
-		log.error("searchException -> " + e.getMessage(), e);
+		LOG.error("searchException -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
@@ -97,7 +97,7 @@ public class BaseResourceExceptionHandler {
 		StandardError standardError = new StandardError(now(), HttpStatus.UNAUTHORIZED.value(),
 				"Access denied", e.getMessage(), request.getRequestURI());
 
-		log.error("authorization -> " + e.getMessage(), e);
+		LOG.error("authorization -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(standardError);
 	}
 
@@ -106,7 +106,7 @@ public class BaseResourceExceptionHandler {
 		StandardError standardError = new StandardError(now(), HttpStatus.FORBIDDEN.value(),
 				"Access denied", e.getMessage(), request.getRequestURI());
 
-		log.error("objectNotFound -> " + e.getMessage(), e);
+		LOG.error("objectNotFound -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(standardError);
 	}
 
@@ -115,7 +115,7 @@ public class BaseResourceExceptionHandler {
 		StandardError standardError = new StandardError(now(), HttpStatus.METHOD_NOT_ALLOWED.value(),
 				"Method Not Allowed", e.getMessage(), request.getRequestURI());
 
-		log.error("methodNotAllowed -> " + e.getMessage(), e);
+		LOG.error("methodNotAllowed -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(standardError);
 	}
 
