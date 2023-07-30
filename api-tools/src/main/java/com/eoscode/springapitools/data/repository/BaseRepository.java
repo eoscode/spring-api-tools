@@ -1,6 +1,6 @@
 package com.eoscode.springapitools.data.repository;
 
-import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.exceptions.EntityNotFoundException;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import javax.persistence.EntityGraph;

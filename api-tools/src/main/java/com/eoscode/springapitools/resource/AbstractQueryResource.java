@@ -34,10 +34,6 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                                @PageableDefault Pageable pageable,
                                QueryParameter queryParameter) {
 
-        if (methodNotAllowed.contains(org.springframework.http.HttpMethod.GET)) {
-            throw new MethodNotAllowedException(org.springframework.http.HttpMethod.GET.name());
-        }
-
         queryParameter.setPageable(true); //force pageable
         T result = query(query, views, pageable, queryParameter);
 
@@ -49,10 +45,6 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                        @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
                        @PageableDefault Pageable pageable,
                        QueryParameter queryParameter) {
-
-        if (methodNotAllowed.contains(org.springframework.http.HttpMethod.GET)) {
-            throw new MethodNotAllowedException(org.springframework.http.HttpMethod.GET.name());
-        }
 
         QueryDefinition queryDefinition = getService().createQueryDefinition(query, queryParameter);
         queryDefinition.setViews(views);
@@ -82,9 +74,6 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
     public <T> T queryWitPage(@RequestBody(required = false) QueryDefinition queryDefinition,
                               @PageableDefault Pageable pageable) {
 
-        if (methodNotAllowed.contains(org.springframework.http.HttpMethod.POST)) {
-            throw new MethodNotAllowedException(org.springframework.http.HttpMethod.POST.name());
-        }
 
         T result = (T) getService().query(queryDefinition, pageable);
 
@@ -100,9 +89,6 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                        @RequestParam(value = "pageable", required = false) Boolean page,
                        @PageableDefault Pageable pageable) {
 
-        if (methodNotAllowed.contains(org.springframework.http.HttpMethod.POST)) {
-            throw new MethodNotAllowedException(org.springframework.http.HttpMethod.POST.name());
-        }
 
         T result;
         if (isDefaultPageable(page)) {

@@ -9,7 +9,7 @@ import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindDetailByIdRepository;
-import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
 import com.eoscode.springapitools.util.ObjectUtils;
 import org.apache.commons.logging.Log;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -154,6 +155,16 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         ID id = null;
         if (entity instanceof Identifier<?>) {
             id = ((Identifier<ID>) entity).getId();
+        } else {
+            try {
+                Object value = ReflectionUtils.getMethod(entityClass, "getId")
+                        .orElseThrow(NoSuchMethodException::new).invoke(entity);
+                if (value != null) {
+                    id = ObjectUtils.getObject(getIdentifierType().getClass(), value);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
 
         Class<Entity> classType = (Class<Entity>) entityType;

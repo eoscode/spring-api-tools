@@ -1,9 +1,10 @@
 package com.eoscode.springapitools.resource.exception;
 
 import com.eoscode.springapitools.data.filter.SearchException;
-import com.eoscode.springapitools.service.exceptions.AuthorizationException;
-import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
-import com.eoscode.springapitools.service.exceptions.ValidationException;
+import com.eoscode.springapitools.exceptions.AuthorizationException;
+import com.eoscode.springapitools.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
+import com.eoscode.springapitools.exceptions.ValidationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -117,6 +118,14 @@ public class BaseResourceExceptionHandler {
 
 		LOG.error("methodNotAllowed -> " + e.getMessage(), e);
 		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(standardError);
+	}
+
+	@ExceptionHandler(MappingStructureValidationException.class)
+	public ResponseEntity<StandardError> mappingStructureValidation(MappingStructureValidationException e, HttpServletRequest request) {
+		ValidationError validationError = new ValidationError(now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+				"Mapping Validation Error", e.getMessage(), request.getRequestURI());
+		LOG.error("validation -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(validationError);
 	}
 
 	private String now() {

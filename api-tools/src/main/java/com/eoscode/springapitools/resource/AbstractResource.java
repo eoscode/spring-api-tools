@@ -3,12 +3,16 @@ package com.eoscode.springapitools.resource;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.data.filter.ViewDefinition;
+import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
+import com.eoscode.springapitools.exceptions.ValidationException;
+import com.eoscode.springapitools.util.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpMethod;
@@ -30,6 +34,40 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		super();
 	}
 
+	private ID getIdentifierValue(Entity entity) throws IllegalAccessException {
+		if (entity instanceof Identifier<?>) {
+			return ((Identifier<ID>) entity).getId();
+		} else {
+			try {
+				Class<Entity> entityClass = (Class<Entity>) getEntityType();
+				Object value = ReflectionUtils.getMethod(entityClass, "getId")
+						.orElseThrow(NoSuchMethodException::new).invoke(entity);
+				if (value != null) {
+					return ObjectUtils.getObject(getIdentifierType().getClass(), value);
+				}
+			} catch (Exception e) {
+				throw new IllegalAccessException("id value not defined in entity");
+			}
+		}
+		return null;
+	}
+
+	private void defineIdentifierValue(Entity entity, ID id) throws IllegalAccessException {
+		if (entity instanceof Identifier) {
+			Identifier<ID> identifier = (Identifier<ID>) entity;
+			identifier.setId(id);
+		} else {
+			try {
+				Class<Entity> entityClass = (Class<Entity>) getEntityType();
+				Class<ID> IdentifierClass = (Class<ID>) getIdentifierType();
+				ReflectionUtils.findRequiredMethod(entityClass, "setId", IdentifierClass)
+								.invoke(entity, id);
+			} catch (Exception e) {
+				throw new IllegalAccessException("id value not defined in entity");
+			}
+		}
+	}
+
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Entity> save(@Valid @RequestBody Entity entity) {
 
@@ -38,18 +76,17 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		}
 
 		entity = getService().save(entity);
-
-		Identifier<?> identifier = null;
-		if (entity instanceof Identifier) {
-			identifier = (Identifier<?>) entity;
-		}
-
-		if (identifier != null) {
-			URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-					.path("/{id}").buildAndExpand(identifier.getId()).toUri();
-			return ResponseEntity.created(uri).build();
-		} else {
-			return ResponseEntity.ok().body(entity);
+		try {
+			ID identifier = getIdentifierValue(entity);
+			if (identifier != null) {
+				URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+						.path("/{id}").buildAndExpand(identifier).toUri();
+				return ResponseEntity.created(uri).build();
+			} else {
+				return ResponseEntity.ok().body(entity);
+			}
+		} catch (IllegalAccessException e) {
+			throw new MappingStructureValidationException(e.getMessage(), e);
 		}
 	}
 
@@ -89,7 +126,6 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@PutMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> update(@Valid @RequestBody Entity entity, @PathVariable ID id) {
 
@@ -97,16 +133,16 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(HttpMethod.PUT.name());
 		}
 
-		if (entity instanceof Identifier) {
-			Identifier<ID> identifier = (Identifier<ID>) entity;
-			identifier.setId(id);
+		try {
+			defineIdentifierValue(entity, id);
+		} catch (IllegalAccessException e) {
+			throw new MappingStructureValidationException(e.getMessage(), e);
 		}
 
 		getService().save(entity);
 		return ResponseEntity.noContent().build();
 	}
 
-	@SuppressWarnings("unchecked")
 	@PatchMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> patch(@Valid @RequestBody Entity entity, @PathVariable ID id) {
 
@@ -114,9 +150,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(HttpMethod.PATCH.name());
 		}
 
-		if (entity instanceof Identifier) {
-			Identifier<ID> identifier = (Identifier<ID>) entity;
-			identifier.setId(id);
+		try {
+			defineIdentifierValue(entity, id);
+		} catch (IllegalAccessException e) {
+			throw new MappingStructureValidationException(e.getMessage(), e);
 		}
 
 		getService().update(entity);
