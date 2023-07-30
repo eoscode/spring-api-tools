@@ -15,7 +15,7 @@ public class SpecificationBuilder<T> {
     private final List<FilterDefinition> filters;
     private final Set<SortDefinition> sorts;
     private final Set<JoinDefinition> joins;
-    private DefaultSpecification.Operator operator;
+    private Operation operation;
     private StringCaseSensitive stringCaseSensitive;
 
     private Specification<T> result = null;
@@ -25,7 +25,7 @@ public class SpecificationBuilder<T> {
         filters = new ArrayList<>();
         sorts = new HashSet<>();
         joins = new HashSet<>();
-        operator = DefaultSpecification.Operator.AND;
+        operation = Operation.AND;
     }
 
     public SpecificationBuilder(boolean distinct) {
@@ -39,12 +39,12 @@ public class SpecificationBuilder<T> {
     }
 
     public SpecificationBuilder withOr() {
-        this.operator = DefaultSpecification.Operator.OR;
+        this.operation = Operation.OR;
         return this;
     }
 
     public SpecificationBuilder withAnd() {
-        this.operator = DefaultSpecification.Operator.AND;
+        this.operation = Operation.AND;
         return this;
     }
 
@@ -55,6 +55,11 @@ public class SpecificationBuilder<T> {
 
     public SpecificationBuilder filter(String field, String operation, Object value) {
         filter(new FilterDefinition(field, operation, value));
+        return this;
+    }
+
+    public SpecificationBuilder filter(String field, Operation operation, Object value) {
+        filter(field, operation.getValue(), value);
         return this;
     }
 
@@ -115,7 +120,7 @@ public class SpecificationBuilder<T> {
                 .joins(queryDefinition.getJoins())
                 .filters(queryDefinition.getFilters())
                 .sorts(queryDefinition.getSorts());
-        if ("or".equalsIgnoreCase(DefaultSpecification.Operator.OR.getValue())) {
+        if ("or".equalsIgnoreCase(Operation.OR.getValue())) {
             withOr();
         }
         return build();
@@ -131,7 +136,7 @@ public class SpecificationBuilder<T> {
                 }
             });
 
-            if (operator == DefaultSpecification.Operator.OR) {
+            if (operation == Operation.OR) {
                 result = Specification.where(result).or(joinAndWhere(joins, filters));
             } else {
                 result = Specification.where(result).and(joinAndWhere(joins, filters));
@@ -183,7 +188,7 @@ public class SpecificationBuilder<T> {
                 .collect(Collectors.toList());
 
             Predicate[] predicates = build(specs, root, query, builder);
-            if (operator == DefaultSpecification.Operator.OR) {
+            if (operation == Operation.OR) {
                 return builder.or(predicates);
             } else {
                 return builder.and(predicates);
