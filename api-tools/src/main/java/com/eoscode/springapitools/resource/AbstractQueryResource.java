@@ -2,7 +2,7 @@ package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.data.filter.QueryDefinition;
 import com.eoscode.springapitools.data.filter.QueryParameter;
-import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
+import com.eoscode.springapitools.resource.exception.ResourceMethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,6 +34,10 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                                @PageableDefault Pageable pageable,
                                QueryParameter queryParameter) {
 
+        if (resourceMethodNotAllowed.contains(ResourceMethod.QUERY)) {
+            throw new ResourceMethodNotAllowedException(ResourceMethod.QUERY.name());
+        }
+
         queryParameter.setPageable(true); //force pageable
         T result = query(query, views, pageable, queryParameter);
 
@@ -45,6 +49,10 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                        @RequestParam(value = "views", required = false, defaultValue = "") Set<String> views,
                        @PageableDefault Pageable pageable,
                        QueryParameter queryParameter) {
+
+        if (resourceMethodNotAllowed.contains(ResourceMethod.QUERY)) {
+            throw new ResourceMethodNotAllowedException(ResourceMethod.QUERY.name());
+        }
 
         QueryDefinition queryDefinition = getService().createQueryDefinition(query, queryParameter);
         queryDefinition.setViews(views);
@@ -74,6 +82,9 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
     public <T> T queryWitPage(@RequestBody(required = false) QueryDefinition queryDefinition,
                               @PageableDefault Pageable pageable) {
 
+        if (resourceMethodNotAllowed.contains(ResourceMethod.QUERY)) {
+            throw new ResourceMethodNotAllowedException(ResourceMethod.QUERY.name());
+        }
 
         T result = (T) getService().query(queryDefinition, pageable);
 
@@ -89,6 +100,9 @@ public abstract class AbstractQueryResource<Service extends AbstractService<?, E
                        @RequestParam(value = "pageable", required = false) Boolean page,
                        @PageableDefault Pageable pageable) {
 
+        if (resourceMethodNotAllowed.contains(ResourceMethod.QUERY)) {
+            throw new ResourceMethodNotAllowedException(ResourceMethod.QUERY.name());
+        }
 
         T result;
         if (isDefaultPageable(page)) {

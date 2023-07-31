@@ -1,18 +1,15 @@
 package com.eoscode.springapitools.resource;
 
-import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.data.filter.QueryParameter;
 import com.eoscode.springapitools.data.filter.ViewDefinition;
 import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
+import com.eoscode.springapitools.resource.exception.ResourceMethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
-import com.eoscode.springapitools.exceptions.ValidationException;
-import com.eoscode.springapitools.util.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpMethod;
@@ -34,45 +31,15 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 		super();
 	}
 
-	private ID getIdentifierValue(Entity entity) throws IllegalAccessException {
-		if (entity instanceof Identifier<?>) {
-			return ((Identifier<ID>) entity).getId();
-		} else {
-			try {
-				Class<Entity> entityClass = (Class<Entity>) getEntityType();
-				Object value = ReflectionUtils.getMethod(entityClass, "getId")
-						.orElseThrow(NoSuchMethodException::new).invoke(entity);
-				if (value != null) {
-					return ObjectUtils.getObject(getIdentifierType().getClass(), value);
-				}
-			} catch (Exception e) {
-				throw new IllegalAccessException("id value not defined in entity");
-			}
-		}
-		return null;
-	}
-
-	private void defineIdentifierValue(Entity entity, ID id) throws IllegalAccessException {
-		if (entity instanceof Identifier) {
-			Identifier<ID> identifier = (Identifier<ID>) entity;
-			identifier.setId(id);
-		} else {
-			try {
-				Class<Entity> entityClass = (Class<Entity>) getEntityType();
-				Class<ID> IdentifierClass = (Class<ID>) getIdentifierType();
-				ReflectionUtils.findRequiredMethod(entityClass, "setId", IdentifierClass)
-								.invoke(entity, id);
-			} catch (Exception e) {
-				throw new IllegalAccessException("id value not defined in entity");
-			}
-		}
-	}
-
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Entity> save(@Valid @RequestBody Entity entity) {
 
 		if (methodNotAllowed.contains(HttpMethod.POST)) {
 			throw new MethodNotAllowedException(HttpMethod.POST.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.SAVE)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.SAVE.name());
 		}
 
 		entity = getService().save(entity);
@@ -98,6 +65,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(HttpMethod.GET.name());
 		}
 
+		if (resourceMethodNotAllowed.contains(ResourceMethod.FIND_ID)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.FIND_ID.name());
+		}
+
 		Entity entity = getService().findById(id);
 
 		if (queryWithViews) {
@@ -113,6 +84,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 		if (methodNotAllowed.contains(HttpMethod.GET)) {
 			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.DETAIL)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.DETAIL.name());
 		}
 
 		Entity entity = getService().findDetailById(id);
@@ -133,6 +108,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(HttpMethod.PUT.name());
 		}
 
+		if (resourceMethodNotAllowed.contains(ResourceMethod.UPDATE)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.UPDATE.name());
+		}
+
 		try {
 			defineIdentifierValue(entity, id);
 		} catch (IllegalAccessException e) {
@@ -148,6 +127,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 		if (methodNotAllowed.contains(HttpMethod.PATCH)) {
 			throw new MethodNotAllowedException(HttpMethod.PATCH.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.MERGE)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.MERGE.name());
 		}
 
 		try {
@@ -167,6 +150,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(HttpMethod.DELETE.name());
 		}
 
+		if (resourceMethodNotAllowed.contains(ResourceMethod.DELETE)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.DELETE.name());
+		}
+
 		getService().deleteById(id);
 		return ResponseEntity.noContent().build();
 	}
@@ -177,6 +164,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 		if (methodNotAllowed.contains(org.springframework.http.HttpMethod.GET)) {
 			throw new MethodNotAllowedException(org.springframework.http.HttpMethod.GET.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.FIND)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.FIND.name());
 		}
 
 		T result;
@@ -206,6 +197,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 			throw new MethodNotAllowedException(org.springframework.http.HttpMethod.GET.name());
 		}
 
+		if (resourceMethodNotAllowed.contains(ResourceMethod.FIND)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.FIND.name());
+		}
+
 		Page<Entity> page = getService().find(filterBy, pageable);
 		return ResponseEntity.ok(page);
 	}
@@ -216,6 +211,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 		if (methodNotAllowed.contains(org.springframework.http.HttpMethod.GET)) {
 			throw new MethodNotAllowedException(org.springframework.http.HttpMethod.GET.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.FIND_ALL)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.FIND_ALL.name());
 		}
 
 		List<Entity> list = getService().findAll(sort);
@@ -234,6 +233,10 @@ public abstract class AbstractResource<Service extends AbstractService<?, Entity
 
 		if (methodNotAllowed.contains(org.springframework.http.HttpMethod.GET)) {
 			throw new MethodNotAllowedException(HttpMethod.GET.name());
+		}
+
+		if (resourceMethodNotAllowed.contains(ResourceMethod.FIND_ALL)) {
+			throw new ResourceMethodNotAllowedException(ResourceMethod.FIND_ALL.name());
 		}
 
 		Page<Entity> page = getService().findAllWithPage(pageable);

@@ -3,11 +3,14 @@ package com.eoscode.springapitools.resource;
 import com.eoscode.springapitools.config.QueryView;
 import com.eoscode.springapitools.config.SpringApiToolsProperties;
 import com.eoscode.springapitools.data.domain.DynamicView;
+import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.service.AbstractService;
+import com.eoscode.springapitools.util.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import javax.annotation.PostConstruct;
@@ -34,6 +37,7 @@ public abstract class BaseResource<Service extends AbstractService<?, Entity, ID
 
     private Service service;
     protected final Set<org.springframework.http.HttpMethod> methodNotAllowed = new HashSet<>();
+    protected final Set<ResourceMethod> resourceMethodNotAllowed = new HashSet<>();
 
     private final Type serviceType;
     private final Type entityType;
@@ -74,6 +78,11 @@ public abstract class BaseResource<Service extends AbstractService<?, Entity, ID
             methodNotAllowed.addAll(Arrays.stream(methodNotAllowedAnnotation.methods()).collect(Collectors.toSet()));
         }
 
+        if (getClass().isAnnotationPresent(ResourceMethodNotAllowed.class)) {
+            ResourceMethodNotAllowed resourceMethod = getClass().getAnnotation(ResourceMethodNotAllowed.class);
+            resourceMethodNotAllowed.addAll(Arrays.stream(resourceMethod.resources()).collect(Collectors.toSet()));
+        }
+
     }
     public Type getServiceType() {
         return serviceType;
@@ -93,6 +102,40 @@ public abstract class BaseResource<Service extends AbstractService<?, Entity, ID
 
     protected Service getService() {
         return service;
+    }
+
+    protected ID getIdentifierValue(Entity entity) throws IllegalAccessException {
+        if (entity instanceof Identifier<?>) {
+            return ((Identifier<ID>) entity).getId();
+        } else {
+            try {
+                Class<Entity> entityClass = (Class<Entity>) getEntityType();
+                Object value = ReflectionUtils.getMethod(entityClass, "getId")
+                        .orElseThrow(NoSuchMethodException::new).invoke(entity);
+                if (value != null) {
+                    return ObjectUtils.getObject(getIdentifierType().getClass(), value);
+                }
+            } catch (Exception e) {
+                throw new IllegalAccessException("id value not defined in entity");
+            }
+        }
+        return null;
+    }
+
+    protected void defineIdentifierValue(Entity entity, ID id) throws IllegalAccessException {
+        if (entity instanceof Identifier) {
+            Identifier<ID> identifier = (Identifier<ID>) entity;
+            identifier.setId(id);
+        } else {
+            try {
+                Class<Entity> entityClass = (Class<Entity>) getEntityType();
+                Class<ID> IdentifierClass = (Class<ID>) getIdentifierType();
+                ReflectionUtils.findRequiredMethod(entityClass, "setId", IdentifierClass)
+                        .invoke(entity, id);
+            } catch (Exception e) {
+                throw new IllegalAccessException("id value not defined in entity");
+            }
+        }
     }
 
     protected boolean isDefaultPageable(Boolean pageable) {

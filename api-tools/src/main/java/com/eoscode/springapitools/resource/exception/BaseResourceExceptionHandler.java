@@ -120,6 +120,15 @@ public class BaseResourceExceptionHandler {
 		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(standardError);
 	}
 
+	@ExceptionHandler(ResourceMethodNotAllowedException.class)
+	public ResponseEntity<StandardError> resourceMethodNotAllowed(ResourceMethodNotAllowedException e, HttpServletRequest request) {
+		StandardError standardError = new StandardError(now(), HttpStatus.METHOD_NOT_ALLOWED.value(),
+				"Resource Method Not Allowed", e.getMessage(), request.getRequestURI());
+
+		LOG.error("resourceMethodNotAllowed -> " + e.getMessage(), e);
+		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(standardError);
+	}
+
 	@ExceptionHandler(MappingStructureValidationException.class)
 	public ResponseEntity<StandardError> mappingStructureValidation(MappingStructureValidationException e, HttpServletRequest request) {
 		ValidationError validationError = new ValidationError(now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
