@@ -20,7 +20,7 @@ public class JWTAuthenticationResource {
             throw new AuthorizationException("invalid token.");
         }
 
-        Auth auth = AuthenticationContext.authenticated().get();
+        Auth<?> auth = AuthenticationContext.authenticated().get();
         String token = jwtManager.generateToken(auth.getUsername());
         response.addHeader("Authorization", "Bearer " + token);
         response.addHeader("access-control-expose-headers", "Authorization");
