@@ -5,8 +5,10 @@ import com.eoscode.springapitools.exceptions.AuthorizationException;
 import com.eoscode.springapitools.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.exceptions.ValidationException;
+import com.eoscode.springapitools.service.MessageResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,9 @@ public class BaseResourceExceptionHandler {
 
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 
+	@Autowired
+	private MessageResolver messageResolver;
+
 	protected URI getPathURI() {
 		return ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
 	}
@@ -43,15 +48,23 @@ public class BaseResourceExceptionHandler {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
 	}
 
-	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ExceptionHandler({ MethodArgumentNotValidException.class })
 	public ResponseEntity<StandardError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
-		ValidationError validationError = new ValidationError(now(), HttpStatus.UNPROCESSABLE_ENTITY.value(),
-				"Validation error", e.getMessage(), request.getRequestURI());
+		ValidationError validationError = new ValidationError(Instant.now().toString(),
+				HttpStatus.UNPROCESSABLE_ENTITY.value(), "Validation error", e.getMessage(), request.getRequestURI());
+		validationError.setError("Invalid data");
+		validationError.setMessage("Review the information provided");
+
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-			validationError.addError(fieldError.getField(), fieldError.getDefaultMessage());
+			final String message = messageResolver != null ? messageResolver.getMessage(fieldError.getDefaultMessage()) : "";
+			if (message.isEmpty()) {
+				validationError.addError(fieldError.getField(), fieldError.getDefaultMessage());
+			} else {
+				validationError.addError(fieldError.getField(), message);
+			}
 		}
 
-		LOG.error("validation -> " + e.getMessage(), e);
+		LOG.error("validation -> " + e.getMessage());
 		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(validationError);
 	}
 
