@@ -6,7 +6,6 @@ import java.util.List;
 public class ValidationError extends StandardError {
 
     private static final long serialVersionUID = 1L;
-
     private final List<FieldMessage> errors = new ArrayList<>();
 
     public ValidationError(String timestamp, Integer status, String error, String message, String path) {

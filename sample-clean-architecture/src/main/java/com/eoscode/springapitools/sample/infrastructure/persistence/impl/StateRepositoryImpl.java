@@ -9,11 +9,12 @@ import com.eoscode.springapitools.service.RepositoryService;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class StateRepositoryImpl implements IStateRepository {
 
-    private final RepositoryService<StateRepository, StateEntity, String> repositoryService;
+    private final RepositoryService<StateRepository, StateEntity, UUID> repositoryService;
     private final StateRepositoryConverter stateRepositoryConverter;
 
     public StateRepositoryImpl(ApplicationContext applicationContext,
@@ -26,7 +27,7 @@ public class StateRepositoryImpl implements IStateRepository {
 
     @Override
     public State findById(String id) {
-        return stateRepositoryConverter.mapToEntity(repositoryService.findById(id));
+        return stateRepositoryConverter.mapToEntity(repositoryService.findById(UUID.fromString(id)));
     }
 
     @Override

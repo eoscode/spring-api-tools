@@ -26,7 +26,7 @@ Configure o Spring para carregar as configurações do `Spring-API-Tools`.
 <dependency>
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.3.0-RELEASE</version>
+    <version>1.4.0-RELEASE</version>
 </dependency>
 ```
 
@@ -44,7 +44,7 @@ public class SpringApiToolsScanConfig extends SpringApiToolsScan {}
 ### Entity
 
 As entidades devem implementar a interface `Identifier` para indicar o atributo que representa a chave
-da entidade.
+da entidade ou deve disponibilizar os métodos get e set para o atributo `Id`.
 
 ```java
 package com.eoscode.springapitools.sample.entity;
@@ -243,7 +243,7 @@ A classe `Resource`, deve especializar `AbstractResource` ou `AbstractRepository
 #### AbstractResource
 
 Disponibiliza as funcionalidades comuns de uma API CRUD. Contudo, permite o desenvolvimento de novas funcionalidades, 
-através do `AbstractService`. 
+através do `AbstractService`.
 
 ```java
 package com.eoscode.springapitools.sample.resource;
@@ -256,7 +256,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/cities")
-public class CityResource extends AbstractResource<CityService, City, String> {}
+public class CityResource extends AbstractResource<CityService, City, String> {
+}
 ```
 
 #### AbstractRepositoryResource
@@ -267,6 +268,8 @@ Disponibiliza as funcionalidades comuns de um CRUD padrão, que não requer o de
 package com.eoscode.springapitools.sample.resource;
 
 import com.eoscode.springapitools.resource.AbstractRepositoryResource;
+import com.eoscode.springapitools.resource.AbstractRepositoryResource2;
+import com.eoscode.springapitools.resource.AbstractRepositoryResourceAbstract;
 import com.eoscode.springapitools.sample.entity.City;
 import com.eoscode.springapitools.sample.repository.CityRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -274,7 +277,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/cities")
-public class CityResource extends AbstractRepositoryResource<CityRepository, City, String> {}
+public class CityResource extends AbstractRepositoryResource<CityRepository, City, String> {
+}
 ```
 
 ## Consultas
@@ -330,6 +334,10 @@ spring-api-tools:
     <tr>
         <th>Tipo</th>
         <th>Operadores</th>
+    </tr>
+    <tr>
+        <td>UUID</td>
+        <td>=, !=, $in, $isNull, $isNotNull</td>
     </tr>
     <tr>
         <td>String</td>

@@ -3,7 +3,7 @@ package com.eoscode.springapitools.security.jwt;
 
 import com.eoscode.springapitools.security.Auth;
 import com.eoscode.springapitools.security.AuthenticationContext;
-import com.eoscode.springapitools.service.exceptions.AuthorizationException;
+import com.eoscode.springapitools.exceptions.AuthorizationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -20,7 +20,7 @@ public class JWTAuthenticationResource {
             throw new AuthorizationException("invalid token.");
         }
 
-        Auth auth = AuthenticationContext.authenticated().get();
+        Auth<?> auth = AuthenticationContext.authenticated().get();
         String token = jwtManager.generateToken(auth.getUsername());
         response.addHeader("Authorization", "Bearer " + token);
         response.addHeader("access-control-expose-headers", "Authorization");

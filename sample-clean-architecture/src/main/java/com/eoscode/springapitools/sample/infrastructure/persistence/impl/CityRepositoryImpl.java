@@ -8,6 +8,7 @@ import com.eoscode.springapitools.sample.infrastructure.persistence.repositories
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class CityRepositoryImpl implements ICityRepository {
@@ -23,7 +24,7 @@ public class CityRepositoryImpl implements ICityRepository {
 
     @Override
     public City findById(String id) {
-        Optional<CityEntity> cityEntity = cityRepository.findById(id);
+        Optional<CityEntity> cityEntity = cityRepository.findById(UUID.fromString(id));
         return cityEntity.map(cityRepositoryConverter::mapToEntity).orElse(null);
     }
 

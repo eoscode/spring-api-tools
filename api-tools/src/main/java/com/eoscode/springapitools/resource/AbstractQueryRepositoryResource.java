@@ -11,8 +11,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 @SuppressWarnings("Duplicates")
-public abstract class AbstractRepositoryResource<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID>
-	extends AbstractResource<RepositoryService<Repository, Entity, ID>, Entity, ID> {
+public abstract class AbstractQueryRepositoryResource<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID>
+	extends AbstractQueryResource<RepositoryService<Repository, Entity, ID>, Entity, ID> {
 
 	protected final Log LOG = LogFactory.getLog(this.getClass());
 
@@ -24,7 +24,7 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 	private final Type entityType;
 	private final Type identifierType;
 
-	public AbstractRepositoryResource() {
+	public AbstractQueryRepositoryResource() {
 		Type type = getClass().getGenericSuperclass();
 		ParameterizedType pType = (ParameterizedType) type;
 

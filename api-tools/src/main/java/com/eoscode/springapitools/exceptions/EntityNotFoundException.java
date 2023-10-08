@@ -1,4 +1,4 @@
-package com.eoscode.springapitools.service.exceptions;
+package com.eoscode.springapitools.exceptions;
 
 public class EntityNotFoundException extends RuntimeException {
 
