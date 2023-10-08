@@ -5,5 +5,7 @@ import com.eoscode.springapitools.sample.infrastructure.persistence.repositories
 import com.eoscode.springapitools.service.AbstractService;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
-public class StateService extends AbstractService<StateRepository, StateEntity, String> {}
+public class StateService extends AbstractService<StateRepository, StateEntity, UUID> {}

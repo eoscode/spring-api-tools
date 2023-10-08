@@ -12,14 +12,14 @@ public class DefaultSpecification<T> implements org.springframework.data.jpa.dom
     private final FilterDefinition criteria;
     private StringCaseSensitive stringCaseSensitive;
 
-    public DefaultSpecification(FilterDefinition filterCriteria) {
-        this.criteria = filterCriteria;
-    }
-
     @SuppressWarnings("NullableProblems")
     @Override
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
         return build(criteria, root, criteriaQuery, criteriaBuilder);
+    }
+
+    public DefaultSpecification(FilterDefinition filterCriteria) {
+        this.criteria = filterCriteria;
     }
 
     public DefaultSpecification(Join join, FilterDefinition filterCriteria) {
