@@ -2,8 +2,8 @@ package com.eoscode.springapitools.data.filter;
 
 import com.eoscode.springapitools.config.StringCaseSensitive;
 import com.eoscode.springapitools.util.ObjectUtils;
+import jakarta.persistence.criteria.*;
 
-import javax.persistence.criteria.*;
 
 @SuppressWarnings("rawtypes")
 public class DefaultSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {

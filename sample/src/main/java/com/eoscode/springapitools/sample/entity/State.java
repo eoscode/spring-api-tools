@@ -1,12 +1,12 @@
 package com.eoscode.springapitools.sample.entity;
 
 import com.eoscode.springapitools.data.domain.Identifier;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import org.jetbrains.annotations.NotNull;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;

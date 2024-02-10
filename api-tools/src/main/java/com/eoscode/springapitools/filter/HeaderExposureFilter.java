@@ -1,7 +1,8 @@
 package com.eoscode.springapitools.filter;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 public class HeaderExposureFilter implements Filter {

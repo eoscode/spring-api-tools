@@ -6,14 +6,15 @@ import com.eoscode.springapitools.data.domain.DynamicView;
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.eoscode.springapitools.service.AbstractService;
 import com.eoscode.springapitools.util.ObjectUtils;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.util.ReflectionUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -75,7 +76,9 @@ public abstract class BaseResource<Service extends AbstractService<?, Entity, ID
 
         if (getClass().isAnnotationPresent(MethodNotAllowed.class)) {
             MethodNotAllowed methodNotAllowedAnnotation = getClass().getAnnotation(MethodNotAllowed.class);
-            methodNotAllowed.addAll(Arrays.stream(methodNotAllowedAnnotation.methods()).collect(Collectors.toSet()));
+            for (int i=0; i<methodNotAllowedAnnotation.methods().length; i++) {
+                methodNotAllowed.add(HttpMethod.valueOf(methodNotAllowedAnnotation.methods()[i]));
+            }
         }
 
         if (getClass().isAnnotationPresent(ResourceMethodNotAllowed.class)) {

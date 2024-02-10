@@ -2,12 +2,12 @@ package com.eoscode.springapitools.sample.entity;
 
 import com.eoscode.springapitools.data.domain.Identifier;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
 
 @Entity
 @Table(name = "city")

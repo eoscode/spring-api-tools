@@ -13,6 +13,7 @@ import com.eoscode.springapitools.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
 import com.eoscode.springapitools.util.ObjectUtils;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -489,7 +489,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         if (getEntityClass().isAnnotationPresent(NoDelete.class)) {
             NoDelete noDelete = getEntityClass().getAnnotation(NoDelete.class);
             try {
-                Entity entity = getEntityClass().newInstance();
+                Entity entity = getEntityClass().getDeclaredConstructor().newInstance();
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 field.setAccessible(true);
                 field.set(entity, 1);

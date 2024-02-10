@@ -1,13 +1,12 @@
 package com.eoscode.springapitools.data.filter;
 
 import com.eoscode.springapitools.config.StringCaseSensitive;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@SuppressWarnings({"rawtypes", "unused", "MismatchedQueryAndUpdateOfCollection", "UnusedReturnValue"})
 public class SpecificationBuilder<T> {
 
     private Boolean distinct;

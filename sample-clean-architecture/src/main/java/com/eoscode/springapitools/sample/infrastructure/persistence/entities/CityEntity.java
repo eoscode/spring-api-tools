@@ -1,13 +1,14 @@
 package com.eoscode.springapitools.sample.infrastructure.persistence.entities;
 
-import com.eoscode.springapitools.data.domain.Identifier;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CityEntity implements Identifier<UUID> {
+public class CityEntity implements Serializable {
 
     @Id
     @Column(name = "id")
@@ -45,12 +46,10 @@ public class CityEntity implements Identifier<UUID> {
     @Column(name = "rate")
     private double rate;
 
-    @Override
     public UUID getId() {
         return id;
     }
 
-    @Override
     public void setId(UUID id) {
         this.id = id;
     }

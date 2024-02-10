@@ -6,6 +6,7 @@ import com.eoscode.springapitools.exceptions.MappingStructureValidationException
 import com.eoscode.springapitools.resource.exception.MethodNotAllowedException;
 import com.eoscode.springapitools.resource.exception.ResourceMethodNotAllowedException;
 import com.eoscode.springapitools.service.AbstractService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;

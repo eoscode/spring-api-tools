@@ -1,6 +1,7 @@
 package com.eoscode.springapitools.data.filter;
 
-import javax.persistence.criteria.*;
+
+import jakarta.persistence.criteria.*;
 
 @SuppressWarnings("rawtypes")
 public class DefaultJoinSpecification<T> implements org.springframework.data.jpa.domain.Specification<T> {
