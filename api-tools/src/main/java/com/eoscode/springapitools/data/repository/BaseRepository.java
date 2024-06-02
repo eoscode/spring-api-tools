@@ -28,7 +28,7 @@ public class BaseRepository<Entity, ID> {
         }
 
         Map<String, Object> hints = new HashMap<>();
-        hints.put("javax.persistence.fetchgraph", graph);
+        hints.put("jakarta.persistence.fetchgraph", graph);
 
         Entity entity = entityManger.find(entityClass, id, hints);
 
