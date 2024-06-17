@@ -26,7 +26,7 @@ Configure o Spring para carregar as configurações do `Spring-API-Tools`.
 <dependency>
     <groupId>com.github.eoscode</groupId>
     <artifactId>spring-api-tools</artifactId>
-    <version>1.4.0-RELEASE</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
