@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -17,9 +18,10 @@ public class JWTManager {
     private Long expiration;
 
     public String generateToken(String username) {
+
         return Jwts.builder()
-                .setSubject(username)
-                .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(expiration)))
+                .subject(username)
+                .expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(expiration)))
                 .signWith(SignatureAlgorithm.HS512, secret.getBytes())
                 .compact();
     }
@@ -46,7 +48,13 @@ public class JWTManager {
 
     private Claims getClaims(String token) {
         try {
-            return Jwts.parser().setSigningKey(secret.getBytes()).parseClaimsJws(token).getBody();
+            SignatureAlgorithm sa = SignatureAlgorithm.HS512;
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(), sa.getJcaName());
+            final var jwtParser = Jwts.parser()
+                    .verifyWith(secretKeySpec)
+                    .build();
+
+            return jwtParser.parseSignedClaims(token).getPayload();
         }
         catch (Exception e) {
             return null;

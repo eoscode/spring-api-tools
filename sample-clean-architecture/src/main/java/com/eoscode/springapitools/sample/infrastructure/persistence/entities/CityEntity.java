@@ -1,13 +1,15 @@
 package com.eoscode.springapitools.sample.infrastructure.persistence.entities;
 
-import com.eoscode.springapitools.data.domain.Identifier;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 @Entity
 @Table(name = "city")
@@ -19,13 +21,13 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CityEntity implements Identifier<String> {
+public class CityEntity implements Serializable {
 
     @Id
     @Column(name = "id")
-    @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    @GeneratedValue(generator = "uuid")
-    private String id;
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid2")
+    private UUID id;
 
     @Column(name = "name", length = 60)
     private String name;
@@ -36,7 +38,7 @@ public class CityEntity implements Identifier<String> {
     private StateEntity state;
 
     @Column(name = "state_id")
-    private String stateId;
+    private UUID stateId;
 
     @Column(name = "population")
     private long population;
@@ -44,13 +46,11 @@ public class CityEntity implements Identifier<String> {
     @Column(name = "rate")
     private double rate;
 
-    @Override
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    @Override
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -70,11 +70,11 @@ public class CityEntity implements Identifier<String> {
         this.state = state;
     }
 
-    public String getStateId() {
+    public UUID getStateId() {
         return stateId;
     }
 
-    public void setStateId(String stateId) {
+    public void setStateId(UUID stateId) {
         this.stateId = stateId;
     }
 

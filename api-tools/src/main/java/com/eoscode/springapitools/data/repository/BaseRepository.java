@@ -1,11 +1,11 @@
 package com.eoscode.springapitools.data.repository;
 
-import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.exceptions.EntityNotFoundException;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.repository.NoRepositoryBean;
 
-import javax.persistence.EntityGraph;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +28,7 @@ public class BaseRepository<Entity, ID> {
         }
 
         Map<String, Object> hints = new HashMap<>();
-        hints.put("javax.persistence.fetchgraph", graph);
+        hints.put("jakarta.persistence.fetchgraph", graph);
 
         Entity entity = entityManger.find(entityClass, id, hints);
 

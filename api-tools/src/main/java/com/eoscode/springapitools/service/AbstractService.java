@@ -9,20 +9,20 @@ import com.eoscode.springapitools.data.filter.*;
 import com.eoscode.springapitools.data.repository.CustomDeleteByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindByIdRepository;
 import com.eoscode.springapitools.data.repository.CustomFindDetailByIdRepository;
-import com.eoscode.springapitools.service.exceptions.EntityNotFoundException;
-import com.eoscode.springapitools.util.NullAwareBeanUtilsBean;
+import com.eoscode.springapitools.exceptions.EntityNotFoundException;
+import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.util.ObjectUtils;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -148,12 +148,31 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         }
     }
 
+    private ID getIdentifierValue(Entity entity) throws IllegalAccessException {
+        if (entity instanceof Identifier<?>) {
+            return ((Identifier<ID>) entity).getId();
+        } else {
+            try {
+                Object value = ReflectionUtils.getMethod(entityClass, "getId")
+                        .orElseThrow(NoSuchMethodException::new).invoke(entity);
+                if (value != null) {
+                    return ObjectUtils.getObject(getIdentifierType().getClass(), value);
+                }
+            } catch (Exception e) {
+                throw new IllegalAccessException("id value not defined in entity");
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("Duplicates")
     @Transactional
     public Entity save(Entity entity) {
-        ID id = null;
-        if (entity instanceof Identifier<?>) {
-            id = ((Identifier<ID>) entity).getId();
+        ID id;
+        try {
+            id = getIdentifierValue(entity);
+        } catch (IllegalAccessException e) {
+            throw new MappingStructureValidationException(e.getMessage(), e);
         }
 
         Class<Entity> classType = (Class<Entity>) entityType;
@@ -172,18 +191,17 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
 
     @Transactional
     public Entity update(Entity entity) throws EntityNotFoundException {
-        Entity entityOld = null;
-        if (entity instanceof Identifier<?>) {
-            ID id =  ((Identifier<ID>) entity).getId();
+        ID id;
+        Entity entityOld;
+        try {
+            id = getIdentifierValue(entity);
             entityOld = findById(id);
+        } catch (IllegalAccessException e) {
+            throw new MappingStructureValidationException(e.getMessage(), e);
         }
 
         if (entityOld != null) {
-            try {
-                NullAwareBeanUtilsBean.getInstance().copyProperties(entityOld, entity);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                log.error(e.getMessage(), e);
-            }
+            org.springframework.util.ReflectionUtils.shallowCopyFieldState(entityOld, entity);
             return getRepository().save(entityOld);
         } else {
             return getRepository().save(entity);
@@ -223,7 +241,12 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
     public void delete(Entity entity) {
         Class<Entity> classEntity = (Class<Entity>) entityType;
         if (classEntity.isAnnotationPresent(NoDelete.class)) {
-            ID id =  ((Identifier<ID>) entity).getId();
+            ID id;
+            try {
+                id = getIdentifierValue(entity);
+            } catch (IllegalAccessException e) {
+                throw new MappingStructureValidationException(e.getMessage(), e);
+            }
             customDeleteByIdRepository.deleteById(entityClass, id);
         } else {
             getRepository().delete(entity);
@@ -460,7 +483,7 @@ public abstract class AbstractService<Repository extends com.eoscode.springapito
         if (getEntityClass().isAnnotationPresent(NoDelete.class)) {
             NoDelete noDelete = getEntityClass().getAnnotation(NoDelete.class);
             try {
-                Entity entity = getEntityClass().newInstance();
+                Entity entity = getEntityClass().getDeclaredConstructor().newInstance();
                 Field field = getEntityClass().getDeclaredField(noDelete.field());
                 field.setAccessible(true);
                 field.set(entity, 1);

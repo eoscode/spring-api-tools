@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 public class ObjectUtils {
 
@@ -37,6 +38,8 @@ public class ObjectUtils {
                 Instant instant = Instant.parse(value);
                 return (T) Date.from(instant);
             }
+        } else if (type == UUID.class) {
+            return (T) UUID.fromString(value);
         }
         return (T) value;
     }

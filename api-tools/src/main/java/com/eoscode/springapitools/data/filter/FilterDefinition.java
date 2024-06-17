@@ -16,15 +16,15 @@ public class FilterDefinition {
 
     public FilterDefinition() {}
 
-    public FilterDefinition(String field, String operator, Object value) {
+    public FilterDefinition(String field, String operation, Object value) {
         this.field = field;
-        this.operator = operator;
+        this.operator = operation;
         this.value = value;
         defineJoin(field);
     }
 
-    public FilterDefinition(String field, String operator, Object value, boolean fetch) {
-        this(field, operator, value);
+    public FilterDefinition(String field, String operation, Object value, boolean fetch) {
+        this(field, operation, value);
         this.fetch = fetch;
     }
 

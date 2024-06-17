@@ -1,8 +1,12 @@
 package com.eoscode.springapitools.security.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.eoscode.springapitools.security.Auth;
 import com.eoscode.springapitools.security.Credential;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,10 +14,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,12 +53,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
 
-        String username = ((Auth) auth.getPrincipal()).getUsername();
+        String username = ((Auth<?>) auth.getPrincipal()).getUsername();
         String token = jwtManager.generateToken(username);
         res.addHeader("Authorization", "Bearer " + token);
         res.addHeader("access-control-expose-headers", "Authorization");
 
-        String json = "{\"id\": \"" + ((Auth) auth.getPrincipal()).getId() + "\", "
+        String json = "{\"id\": \"" + ((Auth<?>) auth.getPrincipal()).getId() + "\", "
                 + "\"token\": \"" + token + "\"}";
         res.getWriter().append(json);
 

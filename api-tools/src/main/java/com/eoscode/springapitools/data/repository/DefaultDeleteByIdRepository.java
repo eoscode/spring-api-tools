@@ -1,9 +1,9 @@
 package com.eoscode.springapitools.data.repository;
 
 import com.eoscode.springapitools.data.domain.NoDelete;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.Query;
 
 @Repository
 public class DefaultDeleteByIdRepository<Entity, ID> extends BaseRepository<Entity, ID>

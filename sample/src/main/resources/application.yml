@@ -5,6 +5,7 @@ spring:
     password:
     driver-class-name: org.h2.Driver
   jpa:
+    database-platform: H2
     show-sql: true
     properties:
       hibernate:

@@ -1,20 +1,20 @@
 package com.eoscode.springapitools.resource;
 
 import com.eoscode.springapitools.service.RepositoryService;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 @SuppressWarnings("Duplicates")
 public abstract class AbstractRepositoryResource<Repository extends com.eoscode.springapitools.data.repository.Repository<Entity, ID>, Entity, ID>
-	extends AbstractResource<RepositoryService<Repository, Entity, ID>, Entity, ID>{
+	extends AbstractResource<RepositoryService<Repository, Entity, ID>, Entity, ID> {
 
-	protected final Log log = LogFactory.getLog(this.getClass());
+	protected final Log LOG = LogFactory.getLog(this.getClass());
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -25,14 +25,12 @@ public abstract class AbstractRepositoryResource<Repository extends com.eoscode.
 	private final Type identifierType;
 
 	public AbstractRepositoryResource() {
-
 		Type type = getClass().getGenericSuperclass();
 		ParameterizedType pType = (ParameterizedType) type;
 
 		repositoryType = pType.getActualTypeArguments()[0];
 		entityType =  pType.getActualTypeArguments()[1];
 		identifierType = pType.getActualTypeArguments()[2];
-
 	}
 
 	@PostConstruct
