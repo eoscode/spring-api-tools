@@ -1,8 +1,8 @@
 package com.eoscode.springapitools.data.domain;
 
-import java.io.Serializable;
+import jakarta.persistence.MappedSuperclass;
 
-import javax.persistence.MappedSuperclass;
+import java.io.Serializable;
 
 @MappedSuperclass
 public abstract class AbstractEntity<ID> extends BaseEntity implements Serializable, Identifier<ID> {

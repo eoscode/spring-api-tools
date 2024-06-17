@@ -6,6 +6,8 @@ import com.eoscode.springapitools.exceptions.EntityNotFoundException;
 import com.eoscode.springapitools.exceptions.MappingStructureValidationException;
 import com.eoscode.springapitools.exceptions.ValidationException;
 import com.eoscode.springapitools.service.MessageResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolationException;
 import java.net.URI;
 import java.time.Instant;
 

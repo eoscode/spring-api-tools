@@ -2,7 +2,7 @@ package com.eoscode.springapitools.sample.configuration;
 
 import com.eoscode.springapitools.config.Jackson2HttpMessageConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -16,7 +16,7 @@ public class JacksonConfiguration extends Jackson2HttpMessageConfiguration {
         MappingJackson2HttpMessageConverter mapping = super.mappingJackson2HttpMessageConverter();
 
         ObjectMapper objectMapper = mapping.getObjectMapper();
-        Hibernate5Module hibernate5Module = new Hibernate5Module();
+        Hibernate5JakartaModule hibernate5Module = new Hibernate5JakartaModule();
         objectMapper.registerModule(hibernate5Module);
 
         return mapping;

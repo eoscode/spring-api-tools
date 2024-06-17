@@ -1,13 +1,12 @@
 package com.eoscode.springapitools.security.jwt;
 
 
+import com.eoscode.springapitools.exceptions.AuthorizationException;
 import com.eoscode.springapitools.security.Auth;
 import com.eoscode.springapitools.security.AuthenticationContext;
-import com.eoscode.springapitools.exceptions.AuthorizationException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import javax.servlet.http.HttpServletResponse;
 
 public class JWTAuthenticationResource {
 
